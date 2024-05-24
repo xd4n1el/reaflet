@@ -1,5 +1,5 @@
 {
-  "name": "react-leaflet",
+  "name": "@xd4n1el/react-leaflet",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

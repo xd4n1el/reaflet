@@ -5,6 +5,16 @@
 /.pnp
 .pnp.js
 
+#not-necessary
+/public
+yarn.lock
+*.css
+/src/reportWebVitals.ts
+/src/setupTests.ts
+
+#vital
+!/styles/leaflet.css
+
 # testing
 /coverage
 

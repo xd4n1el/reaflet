@@ -26,6 +26,8 @@ export default [
     rules: {
       'react/display-name': 'off',
       'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },

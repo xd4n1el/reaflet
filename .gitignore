@@ -5,12 +5,12 @@
 /.pnp
 .pnp.js
 
-#not-necessary
+#not-necessary or test samples
 /public
 yarn.lock
-*.css
 /src/reportWebVitals.ts
 /src/setupTests.ts
+/src/Markers.tsx
 
 #vital
 !/styles/leaflet.css
@@ -20,6 +20,8 @@ yarn.lock
 
 # production
 /build
+/dist
+/lib
 
 # misc
 .DS_Store

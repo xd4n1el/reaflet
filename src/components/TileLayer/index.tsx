@@ -1,46 +1,49 @@
-import { memo, useEffect, useRef } from 'react';
-import { useMap } from '@hooks/useMap';
+import { forwardRef, memo, useImperativeHandle } from 'react';
+import { useElementLifeCycle } from '@hooks/useElementLifeCycle';
+import { useElementFactory } from '@hooks/useElementFactory';
+import { useElementUpdate } from '@hooks/useElementUpdate';
 
-import { TileLayer as TileLayerBase, TileLayerOptions } from 'leaflet';
+import TileLayerFactory, { TileLayerOptions } from './Factory';
 
-interface TileLayerProps extends L.TileLayerOptions {
+export interface TileLayerProps extends TileLayerOptions {
   url: string;
 }
 
-class CustomTileLayer extends TileLayerBase {
-  private URL: string | undefined;
+export type TileLayerRef = TileLayerFactory;
 
-  constructor(urlTemplate: string, options: TileLayerOptions) {
-    super(urlTemplate, options);
-    this.URL = urlTemplate;
-  }
+const TileLayer = memo(
+  forwardRef<TileLayerRef, TileLayerProps>(({ url, ...rest }, ref) => {
+    const { element } = useElementFactory<
+      TileLayerFactory,
+      [string, TileLayerOptions]
+    >({
+      Factory: TileLayerFactory,
+      options: [url, rest],
+    });
+    useElementLifeCycle({ element });
+    useElementUpdate<TileLayerFactory, TileLayerProps>({
+      element,
+      props: { ...rest, url },
+      handlers: {
+        opacity(prevValue, nextValue, instance) {
+          if (prevValue !== nextValue && typeof nextValue === 'number') {
+            instance.setOpacity(nextValue);
+          }
+        },
+        url(prevValue, nextValue, instance) {
+          if (prevValue !== nextValue) {
+            instance.setUrl(nextValue);
+          }
+        },
+        allProps(prevValues, nextValues, instance) {
+          instance.setOptions(nextValues);
+        },
+      },
+    });
+    useImperativeHandle(ref, () => element!, [element]);
 
-  getURL() {
-    return this.URL;
-  }
-}
-
-const TileLayer = memo(({ url, ...rest }: TileLayerProps) => {
-  const tileLayerRef = useRef<CustomTileLayer | undefined>(undefined);
-
-  const map = useMap();
-
-  useEffect(() => {
-    if (!map) return;
-
-    const tileLayer = new CustomTileLayer(url, { ...rest });
-
-    map.addLayer(tileLayer);
-    tileLayerRef.current = tileLayer;
-
-    return () => {
-      if (tileLayerRef.current) {
-        map.removeLayer(tileLayerRef.current);
-      }
-    };
-  }, [map]);
-
-  return null;
-});
+    return null;
+  }),
+);
 
 export default TileLayer;

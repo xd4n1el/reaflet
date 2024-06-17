@@ -46,27 +46,15 @@ export default App;
 ### Documentation
 Main Components
 MapContainer: The main component that creates the map container.
+
 TileLayer: Adds tile layers to the map.
+
 Marker: Adds a marker to the map.
+
 Popup: Adds a popup that can be attached to a marker or other elements.
-Common Properties
-center (MapContainer): Sets the initial center position of the map. Example: [latitude, longitude].
-zoom (MapContainer): Sets the initial zoom level of the map.
-url (TileLayer): The URL of the tile to be loaded. Can include parameters like {z}, {x}, and {y}.
-position (Marker): Sets the position of the marker on the map.
-Events
-You can use properties to map Leaflet events to React callbacks. For example:
-
-jsx
-
-<MapContainer 
-  center={[51.505, -0.09]} 
-  zoom={13} 
-  style={{ height: "100vh", width: "100%" }}
-  />
-
 
 Contributing
+
 Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue on this repository.
 
 License

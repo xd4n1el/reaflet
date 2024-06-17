@@ -1,14 +1,15 @@
 # Reaflet
 
-### Overview
+## Overview
 Reaflet is a library that integrates React with Leaflet, making it easy to create interactive maps in your React applications. With Reaflet, you can create and customize maps effortlessly using React components that abstract the complexity of the Leaflet API.
 
-Features
-React Components: Includes ready-to-use components that encapsulate Leaflet functionality.
-Easy Customization: Allows for the customization of maps and layers.
-Event Support: Maps Leaflet events to React properties.
-Compatibility: Works with the latest versions of React and Leaflet.
-Installation
+## Features
+### React Components: Includes ready-to-use components that encapsulate Leaflet functionality.
+### Easy Customization: Allows for the customization of maps and layers.
+### Event Support: Maps Leaflet events to React properties.
+### Compatibility: Works with the latest versions of React and Leaflet.
+
+## Installation
 To install the library, use npm or yarn:
 
 sh

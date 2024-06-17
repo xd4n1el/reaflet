@@ -24,49 +24,47 @@ export interface ElementRootRef {
   update: () => void;
 }
 
-const ElementRoot = memo(
-  forwardRef<ElementRootRef, ElementRootProps>(
-    ({ children, element }, ref): ReactPortal | null => {
-      const [node, setNode] = useState<Root | null>(null);
-      const [update, setUpdate] = useState<boolean>(false);
+const ElementRoot = forwardRef<ElementRootRef, ElementRootProps>(
+  ({ children, element }, ref): ReactPortal | null => {
+    const [node, setNode] = useState<Root | null>(null);
+    const [update, setUpdate] = useState<boolean>(false);
 
-      const updateComponent = () => {
-        setUpdate(state => !state);
-      };
+    const updateComponent = () => {
+      setUpdate(state => !state);
+    };
 
-      useEffect(() => {
-        if (!element) return;
+    useEffect(() => {
+      if (!element) return;
 
-        if (!node) {
-          const domNode = element?.getNode() as HTMLElement;
+      if (!node) {
+        const domNode = element?.getNode() as HTMLElement;
 
-          if (!domNode) return;
+        if (!domNode) return;
 
-          const root = createRoot(domNode);
+        const root = createRoot(domNode);
 
-          setNode(root);
+        setNode(root);
 
-          root.render(children);
+        root.render(children);
 
-          return () => {
-            root.unmount();
-          };
-        } else {
-          node.render(children);
-        }
-      }, [element, children, node, update]);
+        return () => {
+          root.unmount();
+        };
+      } else {
+        node.render(children);
+      }
+    }, [element, children, node, update]);
 
-      useImperativeHandle(
-        ref,
-        () => ({
-          update: updateComponent,
-        }),
-        [],
-      );
+    useImperativeHandle(
+      ref,
+      () => ({
+        update: updateComponent,
+      }),
+      [],
+    );
 
-      return null;
-    },
-  ),
+    return null;
+  },
 );
 
-export default ElementRoot;
+export default memo(ElementRoot);

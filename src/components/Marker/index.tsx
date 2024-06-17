@@ -8,37 +8,44 @@ import Element from '@components/Factory/Element';
 import { LatLng, LatLngExpression } from 'leaflet';
 import MarkerFactory, { MarkerOptions } from './Factory';
 
-import {
-  compareObjects,
-  excludeEvents,
-  excludeProperties,
-} from '@utils/functions';
+import { InvalidMethods } from '@utils/types';
+import { compareObjects } from '@utils/functions';
 
-interface MarkerDefaultProps {
-  position?: LatLngExpression;
+interface CustomMarkerProps {
   children?: ReactNode;
+  position?: LatLngExpression;
+  smoothDuration?: number;
 }
 
-export type MarkerProps<T = any> = MarkerDefaultProps &
-  Omit<MarkerOptions<T>, 'icon'> &
-  Omit<EventHandlers, 'onSpiderfied' | 'onUnspiderfied'>;
+type Options<T = any> = Omit<MarkerOptions<T>, 'icon' | 'duration'>;
+type Events = Omit<EventHandlers, 'onSpiderfied' | 'onUnspiderfied'>;
+type Factory<T = any> = Omit<MarkerFactory<T>, InvalidMethods>;
 
-export type MarkerRef<T = any> = MarkerFactory<T>;
+export type MarkerProps<T = any> = CustomMarkerProps & Options<T> & Events;
+export type MarkerRef<T = any> = Factory<T>;
 
-const Marker = memo(
-  forwardRef<MarkerRef, MarkerProps>(({ position, children, ...rest }, ref) => {
+const Marker = forwardRef<MarkerRef, MarkerProps>(
+  ({ position, children, smoothDuration, keepAtCenter, ...rest }, ref) => {
     const { element } = useElementFactory<
       MarkerFactory,
       [LatLngExpression, MarkerOptions]
     >({
       Factory: MarkerFactory,
-      options: [position!, rest],
+      options: [
+        position!,
+        { ...rest, keepAtCenter, duration: smoothDuration! },
+      ],
     });
     useElementEvents({ element, props: rest });
-    useElementLifeCycle<any, MarkerFactory>({ element });
-    useElementUpdate<MarkerFactory, MarkerDefaultProps & MarkerOptions>({
+    useElementLifeCycle({ element });
+    useElementUpdate<MarkerFactory, CustomMarkerProps & MarkerOptions>({
       element,
-      props: { ...rest, position },
+      props: {
+        ...rest,
+        duration: smoothDuration!,
+        keepAtCenter,
+        position,
+      },
       handlers: {
         position(prevValue, nextValue, instance) {
           const prevPosition: any = prevValue;
@@ -59,48 +66,40 @@ const Marker = memo(
 
           if (x.equals(y)) return;
 
-          instance?.setLatLng(nextValue!);
+          if (smoothDuration) {
+            instance.slideTo(nextValue!, {
+              keepAtCenter,
+              duration: smoothDuration,
+            });
+          } else {
+            instance?.setLatLng(nextValue!);
+          }
         },
         data(prevValue, nextValue, instance) {
-          const changes = compareObjects(prevValue, nextValue) || {};
-
-          if (Object.keys(changes)?.length > 0) {
-            instance?.setData(changes);
-          }
+          instance?.setData(nextValue);
         },
         draggable(prevValue, nextValue, instance) {
           const isDraggable = instance?.dragging?.enabled();
 
           if (isDraggable && !nextValue) {
             instance?.dragging?.disable();
-          } else if (isDraggable && nextValue) {
+          } else if (!isDraggable && nextValue) {
             instance?.dragging?.enable();
           }
         },
-        allProps(prevValues, nextValues, element) {
-          let prevProps = excludeProperties<MarkerProps>(prevValues, [
-            'position',
-            'data',
-            'draggable',
-            'position',
-            'children',
-          ]);
+        rotationAngle(prevValue, nextValue, instance) {
+          const animate = typeof smoothDuration === 'number';
 
-          let nextProps = excludeProperties<MarkerProps>(nextValues, [
-            'position',
-            'data',
-            'draggable',
-            'position',
-            'children',
-          ]);
-
-          prevProps = excludeEvents<MarkerProps>(prevProps as any);
-          nextProps = excludeEvents<MarkerProps>(nextProps as any);
-
-          const changes = compareObjects(prevProps, nextProps);
+          instance.setRotationAngle(nextValue as number, { animate });
+        },
+        interactive(prevValue, nextValue, instance) {
+          instance.setInteractive(nextValue as boolean);
+        },
+        allProps(prevValues, nextValues, instance) {
+          const changes = compareObjects(prevValues, nextValues);
 
           if (Object.keys(changes)?.length > 0) {
-            element?.setOptions(changes);
+            instance?.setOptions(changes as any);
           }
         },
       },
@@ -108,7 +107,7 @@ const Marker = memo(
     useImperativeHandle(ref, () => element!, [element]);
 
     return <Element container={element}>{children}</Element>;
-  }),
+  },
 );
 
-export default Marker;
+export default memo(Marker);

@@ -16,12 +16,20 @@ export default class DriftMarker extends Marker {
   private _slideKeepAtCenter = false;
   private _slideDraggingWasAllowed = false;
   private _slideFrame = 0;
+  private _dragEnabled?: boolean;
+  private _dbZoomEnabled?: boolean;
+  private positions = new WeakMap();
 
-  addInitHook = () => {
+  constructor(latlng: LatLngExpression, options: any) {
+    super(latlng, options);
+    this.addInitHook();
+  }
+
+  private addInitHook = () => {
     this.on('move', this.slideCancel, this);
   };
 
-  slideTo = (latlng: LatLngExpression, options: SlideOptions) => {
+  public slideTo = (latlng: LatLngExpression, options: SlideOptions) => {
     if (!this._map) return;
 
     this._slideToDuration = options.duration;
@@ -29,16 +37,31 @@ export default class DriftMarker extends Marker {
     this._slideFromLatLng = this.getLatLng();
     this._slideToLatLng = latlng;
     this._slideKeepAtCenter = !!options.keepAtCenter;
+    this._dbZoomEnabled = this._map.doubleClickZoom.enabled();
+    this._dragEnabled = this._map.dragging.enabled();
     this._slideDraggingWasAllowed =
       this._slideDraggingWasAllowed !== undefined
         ? this._slideDraggingWasAllowed
         : this._map.dragging.enabled();
 
     if (this._slideKeepAtCenter) {
-      this._map.dragging.disable();
-      this._map.doubleClickZoom.disable();
+      if (this._dragEnabled) this._map.dragging.disable();
+      if (this._dbZoomEnabled) this._map.doubleClickZoom.disable();
+
       this._map.options.touchZoom = 'center';
       this._map.options.scrollWheelZoom = 'center';
+
+      setTimeout(() => {
+        if (this._dragEnabled) {
+          this._map.dragging.enable();
+          this._dragEnabled = undefined;
+        }
+
+        if (this._dbZoomEnabled) {
+          this._map.doubleClickZoom.enable();
+          this._dbZoomEnabled = undefined;
+        }
+      }, this._slideToDuration);
     }
 
     this.fire('movestart');
@@ -47,7 +70,7 @@ export default class DriftMarker extends Marker {
     return this;
   };
 
-  slideCancel() {
+  public slideCancel() {
     Util.cancelAnimFrame(this._slideFrame);
   }
 
@@ -59,13 +82,16 @@ export default class DriftMarker extends Marker {
     if (remaining < 0) {
       this.setLatLng(this._slideToLatLng);
       this.fire('moveend');
+
       if (this._slideDraggingWasAllowed) {
         this._map.dragging.enable();
         this._map.doubleClickZoom.enable();
         this._map.options.touchZoom = true;
         this._map.options.scrollWheelZoom = true;
       }
+
       this._slideDraggingWasAllowed = false;
+
       return this;
     }
 

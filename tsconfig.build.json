@@ -1,34 +1,31 @@
 {
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
   "compilerOptions": {
-    "module": "esnext",
-    "target": "esnext",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "sourceMap": true,
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "noEmitHelpers": false,
-    "importHelpers": true,
-    "noResolve": false,
-    "noEmitOnError": false,
-    "inlineSourceMap": false,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": false,
+    "declaration": true,
+    "sourceMap": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "react",
+    "types": [
+      "leaflet",
+      "leaflet.heat",
+      "leaflet.markercluster",
+      "node"
+    ],
     "baseUrl": "src",
-    "declaration": true,         
-    "declarationDir": "dist/types", 
     "paths": {
       "@/*": ["./*"],
       "@hooks/*": ["./hooks/*"],
@@ -46,6 +43,5 @@
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "include": ["src"]
 }

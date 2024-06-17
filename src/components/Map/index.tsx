@@ -12,16 +12,16 @@ export interface CustomMapProps extends MapElementProps {
 export type MapProps = CustomMapProps & EventHandlers;
 export type MapRef = HTMLDivElement;
 
-const Map = memo(
-  forwardRef<MapRef, MapProps>(
-    ({ children, containerAttributes = {}, ...rest }, ref) => {
-      return (
-        <Container {...containerAttributes} ref={ref}>
-          <MapElement {...rest}>{children}</MapElement>
-        </Container>
-      );
-    },
-  ),
+import '@styles/Reaflet.css';
+
+const Map = forwardRef<MapRef, MapProps>(
+  ({ children, containerAttributes = {}, ...rest }, ref) => {
+    return (
+      <Container {...containerAttributes} ref={ref}>
+        <MapElement {...rest}>{children}</MapElement>
+      </Container>
+    );
+  },
 );
 
-export default Map;
+export default memo(Map);

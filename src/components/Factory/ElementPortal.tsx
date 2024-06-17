@@ -24,39 +24,37 @@ export interface ElementPortalRef {
   update: () => void;
 }
 
-const ElementPortal = memo(
-  forwardRef<ElementPortalRef, ElementPortalProps>(
-    ({ children, element }, ref): ReactPortal | null => {
-      const [node, setNode] = useState<HTMLElement | null>(null);
-      const [update, setUpdate] = useState<boolean>(false);
+const ElementPortal = forwardRef<ElementPortalRef, ElementPortalProps>(
+  ({ children, element }, ref): ReactPortal | null => {
+    const [node, setNode] = useState<HTMLElement | null>(null);
+    const [update, setUpdate] = useState<boolean>(false);
 
-      useEffect(() => {
-        if (!element) return;
+    useEffect(() => {
+      if (!element) return;
 
-        const root = element?.getNode() as HTMLElement;
+      const root = element?.getNode() as HTMLElement;
 
-        setNode(root);
-      }, [element, update]);
+      setNode(root);
+    }, [element, update]);
 
-      const updateComponent = () => {
-        setUpdate(state => !state);
-      };
+    const updateComponent = () => {
+      setUpdate(state => !state);
+    };
 
-      useImperativeHandle(
-        ref,
-        () => ({
-          update: updateComponent,
-        }),
-        [],
-      );
+    useImperativeHandle(
+      ref,
+      () => ({
+        update: updateComponent,
+      }),
+      [],
+    );
 
-      if (node && children && element) {
-        return createPortal(children, node);
-      }
+    if (node && children && element) {
+      return createPortal(children, node);
+    }
 
-      return null;
-    },
-  ),
+    return null;
+  },
 );
 
-export default ElementPortal;
+export default memo(ElementPortal);

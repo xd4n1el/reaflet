@@ -1,50 +1,57 @@
 import { GeoJsonObject } from 'geojson';
-import { GeoJSON as GeoJSONFactory, GeoJSONOptions } from 'leaflet';
+import {
+  DomUtil,
+  GeoJSON,
+  GeoJSONOptions as LeafletGeoJSONOptions,
+  Util,
+} from 'leaflet';
 
 import { filterProperties } from '@utils/functions';
 import { BaseFactoryMethods } from '@utils/interfaces';
 
-export type { GeoJSONOptions };
+export interface GeoJSONOptions extends LeafletGeoJSONOptions {}
 
 interface AdditionalMethods extends BaseFactoryMethods {}
 
-const validateOptions = (options: any): GeoJSONOptions => {
-  const keys: (keyof GeoJSONOptions)[] = [
-    'attribution',
-    'bubblingMouseEvents',
-    'coordsToLatLng',
-    'filter',
-    'interactive',
-    'markersInheritOptions',
-    'pane',
-    'pointToLayer',
-    'style',
-  ];
+export const geoJSONKeys: (keyof GeoJSONOptions)[] = [
+  'attribution',
+  'bubblingMouseEvents',
+  'coordsToLatLng',
+  'filter',
+  'interactive',
+  'markersInheritOptions',
+  'pane',
+  'pointToLayer',
+  'style',
+];
 
+const validateOptions = (options: any): GeoJSONOptions => {
   const validOptions = filterProperties<GeoJSONOptions>({
     object: options,
-    map: keys,
+    map: geoJSONKeys,
   });
 
   return validOptions as GeoJSONOptions;
 };
 
-export default class GeoJSON
-  extends GeoJSONFactory
+export default class GeoJSONFactory
+  extends GeoJSON
   implements AdditionalMethods
 {
   constructor(geojson: GeoJsonObject, options?: GeoJSONOptions) {
     const validOptions = validateOptions(options);
 
     super(geojson, validOptions);
-  }
 
-  getNode() {
-    return this as any;
+    console.log((this as any)?._element);
   }
 
   getLeafletId() {
-    return (this as any)?._leaflet_id;
+    return Util.stamp(this);
+  }
+
+  getNode() {
+    return undefined;
   }
 
   getOptions() {
@@ -54,6 +61,22 @@ export default class GeoJSON
   setOptions(newOptions: GeoJSONOptions) {
     const validOptions = validateOptions(newOptions);
 
-    Object.assign(this.options, validOptions);
+    Util.setOptions(this.options, validOptions);
+  }
+
+  setInteractive(interactive: boolean) {
+    this.options.interactive = interactive;
+
+    const node = this.getNode();
+
+    if (!node) return;
+
+    if (interactive) {
+      DomUtil.addClass(node, 'leaflet-interactive');
+      this.addInteractiveTarget(node);
+    } else {
+      DomUtil.removeClass(node, 'leaflet-interactive');
+      this.removeInteractiveTarget(node);
+    }
   }
 }

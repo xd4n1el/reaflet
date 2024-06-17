@@ -18,24 +18,22 @@ export interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
 
 export type ContainerRef = HTMLDivElement;
 
-const Container = memo(
-  forwardRef<ContainerRef, ContainerProps>(
-    ({ children, ...rest }, ref): ReactNode => {
-      const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(
-        null,
-      );
+const Container = forwardRef<ContainerRef, ContainerProps>(
+  ({ children, ...rest }, ref): ReactNode => {
+    const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(
+      null,
+    );
 
-      useImperativeHandle(ref, () => containerRef!, [containerRef]);
+    useImperativeHandle(ref, () => containerRef!, [containerRef]);
 
-      return (
-        <FullScreen>
-          <div {...rest} id="leaflet-container" ref={setContainerRef}>
-            <Element container={containerRef}>{children}</Element>
-          </div>
-        </FullScreen>
-      );
-    },
-  ),
+    return (
+      <FullScreen>
+        <div {...rest} id="leaflet-container" ref={setContainerRef}>
+          <Element container={containerRef}>{children}</Element>
+        </div>
+      </FullScreen>
+    );
+  },
 );
 
-export default Container;
+export default memo(Container);

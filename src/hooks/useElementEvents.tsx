@@ -24,11 +24,15 @@ import {
   Popup,
 } from 'leaflet';
 
-export type Layer = LeafletLayer | LayerGroup;
+type Layer = LeafletLayer | LayerGroup;
 
-export interface Event {
+interface Event {
   event: keyof LeafletEventHandlerFnMap;
   handler?: (event: any) => void;
+}
+
+interface Props extends EventHandlers {
+  [key: string]: any;
 }
 
 export interface CustomEvent<K = string[]> {
@@ -91,10 +95,6 @@ export interface EventHandlers {
   onZoomEnd?: (event: LeafletEvent) => void;
   onZoomLevelsChange?: (event: LeafletEvent) => void;
   onZoomStart?: (event: LeafletEvent) => void;
-}
-
-export interface Props extends EventHandlers {
-  [key: string]: any;
 }
 
 export interface UseElementEventsHook<K = string[]> {
@@ -202,7 +202,7 @@ export const useElementEvents = <K extends string>({
         handler,
       });
 
-      element?.addEventListener(event as string, handler);
+      element?.on(event as string, handler);
     });
 
     // Cleanup function to remove all listeners when hook dismount
@@ -211,5 +211,5 @@ export const useElementEvents = <K extends string>({
         element.off(event, handler);
       });
     };
-  }, [element, props, customElements]);
+  }, [element, props, customEvents]);
 };

@@ -9,13 +9,13 @@ import {
 import { useElementFactory } from '@hooks/useElementFactory';
 import { useElementParent } from '@hooks/useElementParent';
 import { useElementUpdate } from '@hooks/useElementUpdate';
+import { useMap } from '@hooks/useMap';
 
+import { ControlProvider } from '@context/Control';
 import ControlFactory, { ControlOptions } from './Factory';
-import { ControlProvider } from '@/context/Control';
 import ElementPortal, {
   ElementPortalRef,
-} from '@/components/Factory/ElementPortal';
-import { useMap } from '@/hooks/useMap';
+} from '@components/Factory/ElementPortal';
 
 interface CustomControlProps {
   children?: ReactNode;
@@ -36,7 +36,6 @@ const ControlElement = forwardRef<ControlRef, ControlProps>(
     >({
       Factory: ControlFactory,
       options: [container, { ...rest, position }],
-
       validation: {
         containerIsRequired: true,
       },

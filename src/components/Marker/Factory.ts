@@ -1,13 +1,13 @@
-import { LatLngExpression } from 'leaflet';
+import { DomUtil, LatLngExpression, Util } from 'leaflet';
+
 import RotatedMarker, {
   RotatedMarkerOptions,
-} from '@/utils/classes/RotatedMarker';
-
+} from '@utils/classes/RotatedMarker';
 import { filterProperties } from '@utils/functions';
 import { BaseFactoryMethods } from '@utils/interfaces';
+import { SlideOptions } from '@utils/classes/DriftMarker';
 
-export interface BaseMarkerOptions
-  extends Omit<RotatedMarkerOptions, 'rotationOrigin'> {}
+export interface BaseMarkerOptions extends RotatedMarkerOptions, SlideOptions {}
 
 export interface DynamicMarkerOptions<D = any> {
   /**
@@ -25,44 +25,44 @@ interface AdditionalMethods<T = any> extends BaseFactoryMethods<MarkerOptions> {
   getData: () => T | undefined;
 }
 
-const validateOptions = (options: any): MarkerOptions => {
-  const keys: (keyof MarkerOptions)[] = [
-    'alt',
-    'attribution',
-    'autoPan',
-    'autoPanOnFocus',
-    'autoPanPadding',
-    'autoPanSpeed',
-    'bubblingMouseEvents',
-    'data',
-    'draggable',
-    'interactive',
-    'keyboard',
-    'opacity',
-    'pane',
-    'riseOffset',
-    'riseOnHover',
-    'rotationAngle',
-    'shadowPane',
-    'title',
-    'zIndexOffset',
-  ];
+export const markerKeys: (keyof MarkerOptions)[] = [
+  'alt',
+  'attribution',
+  'autoPan',
+  'autoPanOnFocus',
+  'autoPanPadding',
+  'autoPanSpeed',
+  'bubblingMouseEvents',
+  'data',
+  'draggable',
+  'interactive',
+  'keyboard',
+  'opacity',
+  'pane',
+  'riseOffset',
+  'riseOnHover',
+  'rotationAngle',
+  'shadowPane',
+  'title',
+  'zIndexOffset',
+];
 
+const validateOptions = (options: any): MarkerOptions => {
   const validOptions = filterProperties<MarkerOptions>({
     object: options,
-    map: keys,
+    map: markerKeys,
   });
 
   return validOptions as MarkerOptions;
 };
 
-export default class Marker<T = any>
+export default class MarkerFactory<T = any>
   extends RotatedMarker
   implements AdditionalMethods
 {
   private data?: T;
 
-  constructor(position: LatLngExpression, options: MarkerOptions = {}) {
+  constructor(position: LatLngExpression, options: MarkerOptions) {
     const validOptions = validateOptions(options);
 
     const { data, ...rest } = validOptions || {};
@@ -80,17 +80,37 @@ export default class Marker<T = any>
     return this.data;
   }
 
-  getLeafletId(): number | undefined {
-    return (this as any)._leaflet_id;
+  getLeafletId() {
+    return Util.stamp(this);
   }
 
   getNode() {
-    return (this as any)._icon;
+    return this?.getElement();
+  }
+
+  getOptions() {
+    return this.options as any;
   }
 
   setOptions(newOptions: MarkerOptions) {
     const validOptions = validateOptions(newOptions);
 
-    Object.assign(this.options, validOptions);
+    Util.setOptions(this.options, validOptions);
+  }
+
+  setInteractive(interactive: boolean) {
+    this.options.interactive = interactive;
+
+    const node = this.getNode();
+
+    if (!node) return;
+
+    if (interactive) {
+      DomUtil.addClass(node, 'leaflet-interactive');
+      this.addInteractiveTarget(node);
+    } else {
+      DomUtil.removeClass(node, 'leaflet-interactive');
+      this.removeInteractiveTarget(node);
+    }
   }
 }

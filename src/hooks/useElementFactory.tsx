@@ -6,15 +6,11 @@ export interface Constructor<T> {
   new (...args: any[]): T;
 }
 
-export interface AfterCreationCallback<I = any> {
-  instance: I;
-}
-
 export interface Validation {
   containerIsRequired?: boolean;
 }
 
-export interface Return<E = any> {
+interface Return<E = any> {
   element?: E;
 }
 

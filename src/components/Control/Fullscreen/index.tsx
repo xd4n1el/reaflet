@@ -9,28 +9,26 @@ export interface FullScreenButtonProps<T = any>
 
 export type FullScreenButtonRef = HTMLButtonElement;
 
-const FullScreenButton = memo(
-  forwardRef<FullScreenButtonRef, FullScreenButtonProps>(
-    ({ className = '', ...rest }, ref) => {
-      const { isActive, enter, exit } = useFullscreen();
+const FullScreenButton = forwardRef<FullScreenButtonRef, FullScreenButtonProps>(
+  ({ className = '', ...rest }, ref) => {
+    const { isActive, enter, exit } = useFullscreen();
 
-      const toggleFullscreen = () => {
-        if (isActive) exit?.();
-        else enter?.();
-      };
+    const toggleFullscreen = () => {
+      if (isActive) exit?.();
+      else enter?.();
+    };
 
-      return (
-        <button
-          {...rest}
-          ref={ref}
-          onClick={toggleFullscreen}
-          className={`leaflet-control-zoom-in leaflet-button ${className}`}>
-          {isActive && <FullscreenOnIcon width={22} height={22} />}
-          {!isActive && <FullscreenOffIcon width={22} height={22} />}
-        </button>
-      );
-    },
-  ),
+    return (
+      <button
+        {...rest}
+        ref={ref}
+        onClick={toggleFullscreen}
+        className={`leaflet-control-zoom-in leaflet-button ${className}`}>
+        {isActive && <FullscreenOnIcon width={22} height={22} />}
+        {!isActive && <FullscreenOffIcon width={22} height={22} />}
+      </button>
+    );
+  },
 );
 
-export default FullScreenButton;
+export default memo(FullScreenButton);

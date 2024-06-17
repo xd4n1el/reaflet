@@ -11,8 +11,8 @@ export interface CanvasGroupProps {
 
 export type CanvasGroupRef = CanvasGroupFactory;
 
-const CanvasGroup = memo(
-  forwardRef<CanvasGroupRef, CanvasGroupProps>(({ children }, ref) => {
+const CanvasGroup = forwardRef<CanvasGroupRef, CanvasGroupProps>(
+  ({ children }, ref) => {
     const { element } = useElementFactory<CanvasGroupFactory, any>({
       Factory: CanvasGroupFactory,
       options: [],
@@ -21,7 +21,7 @@ const CanvasGroup = memo(
     useImperativeHandle(ref, () => element!, [element]);
 
     return <Element container={element}>{children}</Element>;
-  }),
+  },
 );
 
-export default CanvasGroup;
+export default memo(CanvasGroup);

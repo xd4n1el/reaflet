@@ -4,8 +4,8 @@ import { useZoom } from '@hooks/useZoom';
 export interface ZoomOutButtonProps<T = any> extends ButtonHTMLAttributes<T> {}
 export type ZoomOutButtonRef = HTMLButtonElement;
 
-const ZoomOutButton = memo(
-  forwardRef<ZoomOutButtonRef, ZoomOutButtonProps>((props, ref) => {
+const ZoomOutButton = forwardRef<ZoomOutButtonRef, ZoomOutButtonProps>(
+  (props, ref) => {
     const { canZoomOut, zoomOut } = useZoom();
 
     return (
@@ -20,7 +20,7 @@ const ZoomOutButton = memo(
         -
       </button>
     );
-  }),
+  },
 );
 
-export default ZoomOutButton;
+export default memo(ZoomOutButton);

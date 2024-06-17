@@ -18,6 +18,7 @@ export interface BaseFactoryMethods<O = any> {
   getNode: () => HTMLElement | undefined;
   setOptions: (newOptions: O) => void;
   getOptions: () => O;
+  setInteractive?: (interactive: boolean) => void;
 }
 
 export interface AddChildrenEvent<C = any> extends LeafletEvent {

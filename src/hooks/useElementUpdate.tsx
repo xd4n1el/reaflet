@@ -2,14 +2,7 @@ import { useRef, useEffect } from 'react';
 
 import { Layer, LeafletEvent } from 'leaflet';
 
-import { filterProperties } from '@utils/functions';
-
-export interface PropsHandler<T = any> {
-  prop: keyof T;
-  handler: (prevValue: any, currentValue: any) => void;
-}
-
-export interface UpdateEvent<T, U> extends LeafletEvent {
+interface UpdateEvent<T, U> extends LeafletEvent {
   target: T;
   sourceTarget: U;
 }
@@ -29,6 +22,22 @@ export interface UseElementUpdateHook<T = any, K = any, C = any> {
   onElementUpdateMethod?: (event: UpdateEvent<T, C>) => void;
   afterUpdateProps?: (instance: T) => void;
 }
+
+const shallowEqual = (obj1: any, obj2: any) => {
+  if (obj1 === obj2) return true;
+  if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
+
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  if (keys1.length !== keys2.length) return false;
+
+  for (const key of keys1) {
+    if (obj1[key] !== obj2[key]) return false;
+  }
+
+  return true;
+};
 
 /**
  * `@recommended` Hook that allows the update of a component made by a leaflet instance
@@ -69,7 +78,7 @@ export const useElementUpdate = <
 
         const propHandler = (handlers as any)[propName as string];
 
-        if (propHandler) {
+        if (propHandler && !shallowEqual(prevValue, nextValue)) {
           propHandler(prevValue, nextValue, element);
           calledKeys.push(propName as any); // Register the key called
         }
@@ -78,18 +87,18 @@ export const useElementUpdate = <
       const allPropsHandler = handlers?.allProps;
 
       if (allPropsHandler) {
-        const filteredPrevProps = filterProperties<K>({
-          object: prevProps.current!,
-          map: calledKeys as string[],
+        const filteredPrevProps = { ...prevProps.current };
+        const filteredNextProps = { ...props };
+
+        calledKeys.forEach(key => {
+          delete filteredPrevProps[key];
+          delete filteredNextProps[key];
         });
-        const filteredNextProps = filterProperties<K>({
-          object: props,
-          map: calledKeys as string[],
-        });
+
         allPropsHandler(
           filteredPrevProps as K,
           filteredNextProps as K,
-          element!,
+          element,
         );
       }
 

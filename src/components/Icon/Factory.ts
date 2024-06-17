@@ -1,48 +1,46 @@
-import {
-  Icon as IconFactory,
-  IconOptions as IconFactoryOptions,
-} from 'leaflet';
+import { Icon, IconOptions as LeafletIconOptions, Util } from 'leaflet';
 
 import { filterProperties } from '@utils/functions';
 import { BaseFactoryMethods } from '@utils/interfaces';
 
 export type ImageLoading = 'eager' | 'lazy';
 
-export interface IconOptions extends IconFactoryOptions {
+export interface IconOptions extends LeafletIconOptions {
   imageLoading?: ImageLoading;
 }
 
-interface AdditionalMethods extends BaseFactoryMethods<IconOptions> {}
+interface AdditionalMethods
+  extends Omit<BaseFactoryMethods<IconOptions>, 'setInteractive'> {}
+
+export const iconKeys: (keyof IconOptions)[] = [
+  'attribution',
+  'className',
+  'crossOrigin',
+  'iconAnchor',
+  'iconRetinaUrl',
+  'iconSize',
+  'iconSize',
+  'iconUrl',
+  'imageLoading',
+  'pane',
+  'popupAnchor',
+  'shadowAnchor',
+  'shadowRetinaUrl',
+  'shadowSize',
+  'shadowUrl',
+  'tooltipAnchor',
+];
 
 const validateOptions = (options: any): IconOptions => {
-  const keys: (keyof IconOptions)[] = [
-    'attribution',
-    'className',
-    'crossOrigin',
-    'iconAnchor',
-    'iconRetinaUrl',
-    'iconSize',
-    'iconSize',
-    'iconUrl',
-    'imageLoading',
-    'pane',
-    'popupAnchor',
-    'shadowAnchor',
-    'shadowRetinaUrl',
-    'shadowSize',
-    'shadowUrl',
-    'tooltipAnchor',
-  ];
-
   const validOptions = filterProperties<IconOptions>({
     object: options,
-    map: keys,
+    map: iconKeys,
   });
 
   return validOptions as IconOptions;
 };
 
-export default class Icon extends IconFactory implements AdditionalMethods {
+export default class IconFactory extends Icon implements AdditionalMethods {
   private _element?: HTMLImageElement;
 
   constructor(options: IconOptions) {
@@ -70,10 +68,6 @@ export default class Icon extends IconFactory implements AdditionalMethods {
     return (this as any)?._createIcon('icon', oldIcon);
   }
 
-  getNode(): HTMLElement {
-    return this._element!;
-  }
-
   setImage(src: string): void {
     if (!this._element) return;
 
@@ -81,16 +75,20 @@ export default class Icon extends IconFactory implements AdditionalMethods {
   }
 
   getLeafletId() {
-    return (this as any)._leaflet_id;
+    return Util.stamp(this);
+  }
+
+  getNode(): HTMLElement {
+    return this._element!;
+  }
+
+  getOptions(): IconOptions {
+    return this.options;
   }
 
   setOptions(newOptions: IconOptions) {
     const validOptions = validateOptions(newOptions);
 
-    Object.assign(this.options, validOptions);
-  }
-
-  getOptions(): IconOptions {
-    return this.options;
+    Util.setOptions(this.options, validOptions);
   }
 }

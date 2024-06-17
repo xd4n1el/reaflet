@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react';
 
-import Element from '@/components/Factory/Element';
+import Element from '@components/Factory/Element';
 
 export interface WrapperProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;

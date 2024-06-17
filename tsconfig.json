@@ -23,7 +23,7 @@
     "jsxImportSource": "react",
     "baseUrl": "src",
     "declaration": true,         
-    "declarationDir": "dist/types", 
+    "declarationDir": "src/dist/types", 
     "paths": {
       "@/*": ["./*"],
       "@hooks/*": ["./hooks/*"],
@@ -41,6 +41,6 @@
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
-  "include": ["src", "lib"],
+  "include": ["src", "src/dist"],
   "exclude": ["node_modules"]
 }

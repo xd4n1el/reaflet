@@ -6,7 +6,8 @@ import { useElementUpdate } from '@hooks/useElementUpdate';
 import { PointExpression } from 'leaflet';
 import IconFactory, { IconOptions, ImageLoading } from './Factory';
 
-import { renameProperties } from '@utils/functions';
+import { LayerMethods } from '@utils/types';
+import { renameProperties, validateNodeClasses } from '@utils/functions';
 
 interface CustomIconProps {
   size?: PointExpression;
@@ -21,61 +22,67 @@ type ValidIconOptions = Omit<
   IconOptions,
   'iconUrl' | 'iconAnchor' | 'iconSize' | 'iconRetinaUrl' | 'shadowUrl'
 >;
+type Factory = Omit<IconFactory, LayerMethods>;
 
 export type IconProps = CustomIconProps & ValidIconOptions;
-export type IconRef = IconFactory;
+export type IconRef = Factory;
 
-const Icon = memo(
-  forwardRef<IconRef, IconProps>((props, ref) => {
-    const renamedProps = useMemo(() => {
-      const map: Partial<Record<keyof IconProps, keyof IconOptions>> = {
-        src: 'iconUrl',
-        size: 'iconSize',
-        anchor: 'iconAnchor',
-        shadowURL: 'shadowUrl',
-        retinaURL: 'iconRetinaUrl',
-      };
+const Icon = forwardRef<IconRef, IconProps>((props, ref) => {
+  const renamedProps = useMemo(() => {
+    const map: Partial<Record<keyof IconProps, keyof IconOptions>> = {
+      src: 'iconUrl',
+      size: 'iconSize',
+      anchor: 'iconAnchor',
+      shadowURL: 'shadowUrl',
+      retinaURL: 'iconRetinaUrl',
+    };
 
-      return renameProperties<IconProps, IconOptions>(props, map);
-    }, [props]);
+    return renameProperties<IconProps, IconOptions>(props, map);
+  }, [props]);
 
-    const { element } = useElementFactory<IconFactory, [IconOptions]>({
-      Factory: IconFactory,
-      options: [renamedProps],
-    });
-    useElementUpdate<IconFactory, IconProps>({
-      element,
-      props: renamedProps,
-      handlers: {
-        src(prevValue, nextValue, instance) {
-          instance.setImage(nextValue as string);
-        },
-        allProps(prevValues, nextValues, instance) {
-          instance.setOptions(nextValues as IconOptions);
-        },
+  const { element } = useElementFactory<IconFactory, [IconOptions]>({
+    Factory: IconFactory,
+    options: [renamedProps],
+  });
+  useElementUpdate<IconFactory, IconProps>({
+    element,
+    props,
+    handlers: {
+      src(prevValue, nextValue, instance) {
+        instance.setImage(nextValue as string);
       },
-    });
-    useElementLifeCycle<any, IconFactory>({
-      element,
-      beforeAdd({ container }) {
-        if (!container) return;
+      className(prevValue, nextValue, instance) {
+        const node = instance.getNode();
 
-        const node = container?.getElement();
+        if (!node) return;
 
-        return Array.from(node?.classList || {});
+        validateNodeClasses(prevValue!, nextValue!, node);
       },
-      afterAdd({ container }, response) {
-        if (!container) return;
-
-        const node = container?.getElement();
-
-        node?.setAttribute('class', response.join(' '));
+      allProps(prevValues, nextValues, instance) {
+        instance.setOptions(nextValues as IconOptions);
       },
-    });
-    useImperativeHandle(ref, () => element!, [element]);
+    },
+  });
+  useElementLifeCycle<any, IconFactory>({
+    element,
+    beforeAdd({ container }) {
+      if (!container) return;
 
-    return null;
-  }),
-);
+      const node = container?.getElement();
 
-export default Icon;
+      return Array.from(node?.classList || {});
+    },
+    afterAdd({ container }, response) {
+      if (!container) return;
+
+      const node = container?.getElement();
+
+      node?.setAttribute('class', response.join(' '));
+    },
+  });
+  useImperativeHandle(ref, () => element!, [element]);
+
+  return null;
+});
+
+export default memo(Icon);

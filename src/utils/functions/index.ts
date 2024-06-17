@@ -1,10 +1,3 @@
-export interface FilterProperties<T> {
-  object: T;
-  map: string[];
-  /**@default false */
-  keepNullishValue?: boolean;
-}
-
 /**
  * Funciton to compare objects, usefull to Component props
  *
@@ -12,24 +5,36 @@ export interface FilterProperties<T> {
  *
  * 1° Object type
  */
+
+import { DomUtil } from 'leaflet';
+
 /* eslint-disable no-prototype-builtins */
 export const compareObjects = <T extends Record<string, any>>(
   object: T,
   comparator: T,
 ): Partial<T> => {
-  const response: Partial<T> = {};
+  const res: Partial<T> = {};
 
   for (const key in object) {
     // eslint-disable-next-line no-prototype-builtins
     if (object.hasOwnProperty(key)) {
       if (object[key] !== comparator[key]) {
-        response[key] = comparator[key];
+        res[key] = comparator[key];
       }
     }
   }
 
-  return response;
+  return res;
 };
+
+export interface FilterProperties<T> {
+  object: T;
+  map: string[];
+  /**@default false */
+  keepNullishValue?: boolean;
+  /** this prop keep the whitelist even when map array is empty */
+  whitelist?: boolean;
+}
 
 /**
  * Funciton to filter properties in objects, usefull to Component props
@@ -42,8 +47,11 @@ export const filterProperties = <T>({
   object,
   map,
   keepNullishValue,
+  whitelist = false,
 }: FilterProperties<T>): Partial<T> => {
   const result: Partial<T> = {};
+
+  if (map?.length === 0 && !whitelist) return object;
 
   for (const key in object) {
     if (map.includes(key)) {
@@ -139,4 +147,29 @@ export const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
   }
 
   return chunks;
+};
+
+export const validateNodeClasses = (
+  prev: string,
+  next: string,
+  node: HTMLElement,
+): void => {
+  const isValid = (arg?: string) => arg && typeof arg === 'string';
+
+  if (!isValid(prev) || !isValid(next) || !node) return;
+
+  const prevClasses = prev!.split(' ');
+  const nextClasses = next!.split(' ');
+
+  prevClasses.forEach((value: string) => {
+    if (!nextClasses.includes(value)) {
+      DomUtil.removeClass(node, value);
+    }
+  });
+
+  nextClasses.forEach((value: string) => {
+    if (!prevClasses.includes(value)) {
+      DomUtil.addClass(node, value);
+    }
+  });
 };

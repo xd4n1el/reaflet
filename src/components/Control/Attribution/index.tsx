@@ -1,6 +1,7 @@
 import {
   ReactNode,
   forwardRef,
+  memo,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -35,7 +36,7 @@ const AttributionControl = forwardRef<
     [AttributionControlOptions]
   >({
     Factory: AttributionControlFactory,
-    options: [{ prefix: '' }],
+    options: [rest],
   });
   useElementUpdate<AttributionControlFactory, AttributionControlProps>({
     element,
@@ -71,4 +72,4 @@ const AttributionControl = forwardRef<
   );
 });
 
-export default AttributionControl;
+export default memo(AttributionControl);

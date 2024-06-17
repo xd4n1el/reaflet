@@ -10,6 +10,7 @@ import { useElementParent } from '@hooks/useElementParent';
 import { useMap } from '@hooks/useMap';
 
 import { Map } from 'leaflet';
+import Element from '@components/Factory/Element';
 import VirtualizationFactory, { VirtualizationOptions } from './Factory';
 
 export interface VirtualizationProps extends VirtualizationOptions {
@@ -18,36 +19,34 @@ export interface VirtualizationProps extends VirtualizationOptions {
 
 export type VirtualizationRef = VirtualizationFactory;
 
-const Virtualization = memo(
-  forwardRef<VirtualizationRef, VirtualizationProps>(
-    ({ children, ...rest }, ref) => {
-      const { container } = useElementParent();
-      const map = useMap();
+const Virtualization = forwardRef<VirtualizationRef, VirtualizationProps>(
+  ({ children, ...rest }, ref) => {
+    const { container } = useElementParent();
+    const map = useMap();
 
-      const { element } = useElementFactory<
-        VirtualizationFactory,
-        [Map, any, VirtualizationOptions]
-      >({
-        Factory: VirtualizationFactory,
-        options: [map!, container, rest],
-        validation: {
-          containerIsRequired: true,
-        },
-      });
+    const { element } = useElementFactory<
+      VirtualizationFactory,
+      [Map, any, VirtualizationOptions]
+    >({
+      Factory: VirtualizationFactory,
+      options: [map!, container, rest],
+      validation: {
+        containerIsRequired: true,
+      },
+    });
 
-      useImperativeHandle(ref, () => element!, [element]);
+    useImperativeHandle(ref, () => element!, [element]);
 
-      useEffect(() => {
-        if (!element) return;
+    useEffect(() => {
+      if (!element) return;
 
-        return () => {
-          element?.destroy();
-        };
-      }, [element]);
+      return () => {
+        element?.destroy();
+      };
+    }, [element]);
 
-      return <>{children}</>;
-    },
-  ),
+    return <Element container={element}>{children}</Element>;
+  },
 );
 
-export default Virtualization;
+export default memo(Virtualization);

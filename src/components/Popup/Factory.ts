@@ -1,67 +1,83 @@
 import {
   LatLngExpression,
-  Popup as PopupFactory,
-  PopupOptions as PopupFactoryOptions,
+  Popup,
+  PopupOptions as LeafletPopupOptions,
+  Util,
+  DomUtil,
 } from 'leaflet';
 
 import { filterProperties } from '@utils/functions';
 import { BaseFactoryMethods } from '@utils/interfaces';
 
-export interface PopupOptions extends PopupFactoryOptions {}
+export interface PopupOptions extends LeafletPopupOptions {}
 
 interface AdditionalMethods extends BaseFactoryMethods<PopupOptions> {}
 
-const validateOptions = (options: any): PopupOptions => {
-  const keys: (keyof PopupOptions)[] = [
-    'autoClose',
-    'autoPan',
-    'autoPanPadding',
-    'autoPanPaddingBottomRight',
-    'autoPanPaddingTopLeft',
-    'className',
-    'closeButton',
-    'closeOnClick',
-    'closeOnEscapeKey',
-    'interactive',
-    'keepInView',
-    'maxHeight',
-    'maxWidth',
-    'offset',
-    'pane',
-  ];
+export const popupKeys: (keyof PopupOptions)[] = [
+  'autoClose',
+  'autoPan',
+  'autoPanPadding',
+  'autoPanPaddingBottomRight',
+  'autoPanPaddingTopLeft',
+  'className',
+  'closeButton',
+  'closeOnClick',
+  'closeOnEscapeKey',
+  'interactive',
+  'keepInView',
+  'maxHeight',
+  'maxWidth',
+  'offset',
+  'pane',
+];
 
+const validateOptions = (options: any): PopupOptions => {
   const validOptions = filterProperties<PopupOptions>({
     object: options,
-    map: keys,
+    map: popupKeys,
   });
 
   return validOptions as PopupOptions;
 };
 
-export default class Popup extends PopupFactory implements AdditionalMethods {
+export default class PopupFactory extends Popup implements AdditionalMethods {
   constructor(position: LatLngExpression, options: PopupOptions) {
     const validOptions = validateOptions(options);
 
     super(position, validOptions);
   }
 
+  getLeafletId() {
+    return Util.stamp(this);
+  }
+
   getNode(): HTMLElement | undefined {
     return (this as any).getElement()?.firstChild;
   }
 
-  getLeafletId() {
-    return (this as any)._leaflet_id;
+  getOptions() {
+    return this?.options;
   }
 
   setOptions(newOptions: any) {
     const validOptions = validateOptions(newOptions);
 
-    Object.assign(this.options, validOptions);
-
-    this.update();
+    Util.setOptions(this.options, validOptions);
   }
 
-  getOptions() {
-    return this.options;
+  setInteractive(interactive: boolean) {
+    this.options.interactive = interactive;
+
+    const node = this.getNode();
+
+    if (!node) return;
+
+    if (interactive) {
+      DomUtil.addClass(node, 'leaflet-interactive');
+      this.addInteractiveTarget(node);
+    } else {
+      DomUtil.removeClass(node, 'leaflet-interactive');
+      this.removeInteractiveTarget(node);
+    }
   }
 }

@@ -1,8 +1,8 @@
 import { HTMLAttributes, ReactNode, forwardRef, memo } from 'react';
 
+import Wrapper from './Wrapper';
 import ControlElement from './ControlElement';
 import ControlFactory, { ControlOptions } from './Factory';
-import Wrapper from './Wrapper';
 
 interface CustomControlProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;

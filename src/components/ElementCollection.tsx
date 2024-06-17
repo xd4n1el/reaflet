@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { useElementParent } from '@hooks/useElementParent';
 
-import { LayerEvent, Map } from 'leaflet';
+import { Layer, LayerEvent, Map } from 'leaflet';
 import Element from '@components/Factory/Element';
 
 import { chunkArray } from '@utils/functions';
@@ -24,6 +24,11 @@ interface Data<T extends any[]> {
 }
 
 type DynamicProps<T = any> = Partial<Record<keyof T, any>>;
+
+interface RemoveElements<E = any> {
+  all?: boolean;
+  elements?: E[];
+}
 
 export type ElementCollectionData<
   P = any,
@@ -46,152 +51,174 @@ export interface ElementCollectionProps<P = any, K extends any[] = any> {
   onChunkEnd?: () => void;
 }
 
-export interface ElementCollectionRef {
+export interface ElementCollectionRef<E = any> {
   reset: () => void;
-  addElements: (elements: any[]) => void;
-  setElements: (elements: any[]) => void;
+  getElements: () => E[];
+  addElements: (elements: E[]) => void;
+  setElements: (elements: E[]) => void;
+  removeElements: (params: RemoveElements<E>) => void;
 }
 
-const ElementCollection = memo(
-  forwardRef<ElementCollectionRef, ElementCollectionProps>(
-    (
-      {
-        children,
-        chunkAt,
-        maxChunkSize = 1000,
-        chunkInterval = 200,
-        onChunkEnd,
-        data = [],
-      },
-      ref,
-    ): ReactNode => {
-      const [queue, setQueue] = useState<any[]>([]);
+const ElementCollection = forwardRef<
+  ElementCollectionRef,
+  ElementCollectionProps
+>(
+  (
+    {
+      children,
+      chunkAt,
+      maxChunkSize = 1000,
+      chunkInterval = 200,
+      onChunkEnd,
+      data = [],
+    },
+    ref,
+  ): ReactNode => {
+    const [queue, setQueue] = useState<any[]>([]);
 
-      const layers = useRef<any[]>([]);
-      const interval = useRef<NodeJS.Timer | undefined>();
-      const prevProps = useRef<ElementCollectionData[]>([]);
+    const layers = useRef<any[]>([]);
+    const interval = useRef<NodeJS.Timer | undefined>();
+    const prevProps = useRef<ElementCollectionData[]>([]);
 
-      const { container } = useElementParent();
+    const { container } = useElementParent();
 
-      const reset = () => {
-        setQueue([]);
-        clearInterval(interval.current as any);
-        interval.current = undefined;
-      };
+    const reset = () => {
+      setQueue([]);
+      clearInterval(interval.current as any);
+      interval.current = undefined;
+    };
 
-      const addElements = (elements: any[] = []) => {
-        setQueue(elements);
-      };
+    const getElements = <T extends object>(): T[] => {
+      return layers.current as T[];
+    };
 
-      const setElements = (elements: any[] = []) => {
-        setQueue(elements);
-      };
+    const addElements = (elements: any[] = []) => {
+      setQueue(elements);
+    };
 
-      const onLayerAdd = (event: LayerEvent) => {
-        layers.current.push(event.layer);
-      };
+    const setElements = (elements: any[] = []) => {
+      setQueue(elements);
+    };
 
-      const onLayerRemove = (event: LayerEvent) => {
-        layers.current = layers.current.filter(
-          (layer: any) =>
-            layer?._leaflet_id !== (event as any)?.layer?._leaflet_id,
-        );
-      };
+    const onLayerAdd = (event: LayerEvent) => {
+      layers.current.push(event.layer);
+    };
 
-      const cloneWithProps = (child: ReactNode, props: any): ReactElement => {
-        if (isValidElement(child)) {
-          return cloneElement(child, {
-            ...props,
-            children: Children.map(
-              child.props.children,
-              (nestedChild, index: number) => {
-                const childProps = props?.childrenProps[index];
+    const onLayerRemove = (event: LayerEvent) => {
+      layers.current = layers.current.filter(
+        (layer: any) =>
+          layer?._leaflet_id !== (event as any)?.layer?._leaflet_id,
+      );
+    };
 
-                if (!childProps) return null;
+    const removeElements = ({ all, elements }: RemoveElements<Layer>) => {
+      if (layers.current.length === 0) return;
 
-                return cloneWithProps(nestedChild, childProps);
-              },
-            ),
-          });
-        }
+      const toRemove = all ? layers.current : elements || [];
 
-        return child as ReactElement;
-      };
+      toRemove.forEach((layer: Layer) => {
+        layer?.clearAllEventListeners();
+        layer?.remove();
+      });
+    };
 
-      useEffect(() => {
-        if (data?.length === 0) return;
+    const cloneWithProps = (child: ReactNode, props: any): ReactElement => {
+      if (isValidElement(child)) {
+        return cloneElement(child, {
+          ...props,
+          children: Children.map(
+            child.props.children,
+            (nestedChild, index: number) => {
+              const childProps = props?.childrenProps[index];
 
-        prevProps.current = data;
+              if (!childProps) return null;
 
-        if (chunkAt && chunkAt > data?.length) {
-          setQueue(data);
-        } else {
-          const chunks: any[][] = chunkArray(data, maxChunkSize);
+              return cloneWithProps(nestedChild, childProps);
+            },
+          ),
+        });
+      }
 
-          let step = 0;
+      return child as ReactElement;
+    };
 
-          interval.current = setInterval(() => {
-            if (step > chunks.length - 1) {
-              if (onChunkEnd) onChunkEnd();
+    useEffect(() => {
+      // insert layers on map
 
-              setQueue([]);
+      if (data?.length === 0) return;
 
-              return clearInterval(interval.current as any);
-            } else {
-              const chunk: any[] = chunks[step];
+      prevProps.current = data;
 
-              setQueue(chunk);
+      if (chunkAt && chunkAt > data?.length) {
+        setQueue(data);
+      } else {
+        const chunks: any[][] = chunkArray(data, maxChunkSize);
 
-              step += 1;
-            }
-          }, chunkInterval);
+        let step = 0;
 
-          return () => {
-            clearInterval(interval.current as any);
-          };
-        }
-      }, [data, chunkInterval, maxChunkSize, chunkAt, onChunkEnd]);
+        interval.current = setInterval(() => {
+          if (step > chunks.length - 1) {
+            if (onChunkEnd) onChunkEnd();
 
-      useEffect(() => {
-        if (!container) return;
+            setQueue([]);
 
-        (container as Map).on('layeradd', onLayerAdd);
-        (container as Map).on('layerremove', onLayerRemove);
+            return clearInterval(interval.current as any);
+          } else {
+            const chunk: any[] = chunks[step];
+
+            setQueue(chunk);
+
+            step += 1;
+          }
+        }, chunkInterval);
 
         return () => {
-          (container as Map).off('layeradd', onLayerAdd);
-          (container as Map).off('layerremove', onLayerRemove);
-
-          if (container?.removeLayers) {
-            container?.removeLayers(layers.current);
-          } else {
-            layers.current.forEach(layer => {
-              layer?.clearAllEventListeners();
-              (container as Map)?.removeLayer(layer);
-            });
-          }
+          clearInterval(interval.current as any);
         };
-      }, [container]);
+      }
+    }, [data, chunkInterval, maxChunkSize, chunkAt, onChunkEnd]);
 
-      useImperativeHandle(
-        ref,
-        () => ({
-          reset,
-          addElements,
-          setElements,
-        }),
-        [],
-      );
+    useEffect(() => {
+      if (!container) return;
 
-      return (
-        <Element container={container} preventUnmount>
-          {queue.map((item: any) =>
-            cloneWithProps(children as ReactElement, item),
-          )}
-        </Element>
-      );
-    },
-  ),
+      (container as Map).on('layeradd', onLayerAdd);
+      (container as Map).on('layerremove', onLayerRemove);
+
+      return () => {
+        (container as Map).off('layeradd', onLayerAdd);
+        (container as Map).off('layerremove', onLayerRemove);
+
+        if (container?.removeLayers) {
+          container?.removeLayers(layers.current);
+        } else {
+          layers.current.forEach(layer => {
+            layer?.clearAllEventListeners();
+            (container as Map)?.removeLayer(layer);
+          });
+        }
+      };
+    }, [container]);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        reset,
+        getElements,
+        addElements,
+        setElements,
+        removeElements,
+      }),
+      [],
+    );
+
+    return (
+      <Element container={container} preventUnmount>
+        {queue.map((childProps: any) =>
+          cloneWithProps(children as ReactElement, childProps),
+        )}
+      </Element>
+    );
+  },
 );
 
-export default ElementCollection;
+export default memo(ElementCollection);

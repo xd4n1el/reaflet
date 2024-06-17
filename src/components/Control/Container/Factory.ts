@@ -1,6 +1,7 @@
 import {
-  Control as ControlFactory,
-  ControlOptions as ControlFactoryOptions,
+  Control,
+  ControlOptions as LeafletControlOptions,
+  Util,
 } from 'leaflet';
 
 import { filterProperties } from '@utils/functions';
@@ -8,25 +9,25 @@ import { BaseFactoryMethods } from '@utils/interfaces';
 
 export type Position = 'topleft' | 'topright' | 'bottomleft' | 'bottomright';
 
-export interface ControlOptions extends ControlFactoryOptions {
+export interface ControlOptions extends LeafletControlOptions {
   position: Position;
 }
 
 interface AdditionalMethods extends BaseFactoryMethods<ControlOptions> {}
 
-const validateOptions = (options: any): ControlOptions => {
-  const keys: (keyof ControlOptions)[] = ['position'];
+export const controlKeys: (keyof ControlOptions)[] = ['position'];
 
+const validateOptions = (options: any): ControlOptions => {
   const validOptions = filterProperties<ControlOptions>({
     object: options,
-    map: keys,
+    map: controlKeys,
   });
 
   return validOptions as ControlOptions;
 };
 
-export default class Control
-  extends ControlFactory
+export default class ControlFactory
+  extends Control
   implements AdditionalMethods
 {
   private _element?: HTMLElement;
@@ -40,7 +41,7 @@ export default class Control
   }
 
   getLeafletId() {
-    return (this as any)?._leaflet_id;
+    return Util.stamp(this);
   }
 
   getNode() {

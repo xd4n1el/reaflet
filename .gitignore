@@ -11,6 +11,7 @@ yarn.lock
 /src/reportWebVitals.ts
 /src/setupTests.ts
 /src/Markers.tsx
+/src/reaflet
 
 #vital
 !/styles/leaflet.css

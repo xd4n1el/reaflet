@@ -7,6 +7,7 @@ import { useElementUpdate } from '@hooks/useElementUpdate';
 import Element from '@components/Factory/Element';
 import ClusterGroupFactory, { ClusterGroupOptions } from './Factory';
 
+import { LayerMethods } from '@utils/types';
 import { AddChildrenEvent } from '@utils/interfaces';
 
 interface CustomClusterGroupProps {
@@ -28,64 +29,61 @@ type ClusterEvents =
   | 'clustermouseout'
   | 'add-children';
 
+type Factory = Omit<ClusterGroupFactory, LayerMethods>;
+
 export type ClusterGroupProps = CustomClusterGroupProps &
   ValidGroupOptions &
   EventHandlers;
 
-export type ClusterGroupRef = ClusterGroupFactory;
+export type ClusterGroupRef = Factory;
 
-const ClusterGroup = memo(
-  forwardRef<ClusterGroupRef, ClusterGroupProps>(
-    ({ children, ...rest }, ref) => {
-      const { element } = useElementFactory<
-        ClusterGroupFactory,
-        [ClusterGroupOptions]
-      >({
-        Factory: ClusterGroupFactory,
-        options: [rest],
-      });
-      useElementEvents<ClusterEvents>({
-        element,
-        props: rest,
-        customEvents: [
-          {
-            event: 'clusterclick',
-            handler: rest?.onClick,
-          },
-          {
-            event: 'clustermouseout',
-            handler: rest?.onMouseOut,
-          },
-          {
-            event: 'clustermouseover',
-            handler: rest?.onMouseOver,
-          },
-          {
-            event: 'add-children',
-            handler({ elements }: AddChildrenEvent<any>) {
-              element?.addLayers(elements);
-            },
-          },
-        ],
-      });
-      useElementLifeCycle<any, ClusterGroupFactory>({ element });
-      useElementUpdate<
-        ClusterGroupFactory,
-        Omit<ClusterGroupProps, 'children'>
-      >({
-        element,
-        props: rest,
-        handlers: {
-          allProps(prevValues, nextValues, instance) {
-            instance.setOptions(nextValues);
+const ClusterGroup = forwardRef<ClusterGroupRef, ClusterGroupProps>(
+  ({ children, ...rest }, ref) => {
+    const { element } = useElementFactory<
+      ClusterGroupFactory,
+      [ClusterGroupOptions]
+    >({
+      Factory: ClusterGroupFactory,
+      options: [rest],
+    });
+    useElementEvents<ClusterEvents>({
+      element,
+      props: rest,
+      customEvents: [
+        {
+          event: 'clusterclick',
+          handler: rest?.onClick,
+        },
+        {
+          event: 'clustermouseout',
+          handler: rest?.onMouseOut,
+        },
+        {
+          event: 'clustermouseover',
+          handler: rest?.onMouseOver,
+        },
+        {
+          event: 'add-children',
+          handler({ elements }: AddChildrenEvent<any>) {
+            element?.addLayers(elements);
           },
         },
-      });
-      useImperativeHandle(ref, () => element!, [element]);
+      ],
+    });
+    useElementLifeCycle<any, ClusterGroupFactory>({ element });
+    useElementUpdate<ClusterGroupFactory, Omit<ClusterGroupProps, 'children'>>({
+      element,
+      props: rest,
+      handlers: {
+        allProps(prevValues, nextValues, instance) {
+          instance.setOptions(nextValues);
+        },
+      },
+    });
+    useImperativeHandle(ref, () => element!, [element]);
 
-      return <Element container={element}>{children}</Element>;
-    },
-  ),
+    return <Element container={element}>{children}</Element>;
+  },
 );
 
-export default ClusterGroup;
+export default memo(ClusterGroup);

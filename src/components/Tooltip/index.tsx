@@ -12,161 +12,172 @@ import { useElementFactory } from '@hooks/useElementFactory';
 import { useElementUpdate } from '@hooks/useElementUpdate';
 import { useElementParent } from '@hooks/useElementParent';
 
-import { Layer, Marker } from 'leaflet';
+import { Layer, Marker, TooltipEvent } from 'leaflet';
 import TooltipFactory, { TooltipOptions } from './Factory';
 import ElementPortal, {
   ElementPortalRef,
 } from '@components/Factory/ElementPortal';
 
-import {
-  compareObjects,
-  excludeEvents,
-  excludeProperties,
-} from '@utils/functions';
+import { LayerMethods } from '@utils/types';
+import { compareObjects, validateNodeClasses } from '@utils/functions';
 
-interface TooltipDefaultProps {
+interface CustomTooltipProps {
   children?: ReactNode;
   isOpen?: boolean;
 }
 
-export type TooltipProps = Omit<TooltipOptions, 'content'> &
-  EventHandlers &
-  TooltipDefaultProps;
+type Options = Omit<TooltipOptions, 'content'>;
+type Events = Omit<
+  EventHandlers,
+  | 'onSpiderfied'
+  | 'onUnspiderfied'
+  | 'onTooltipClose'
+  | 'onTooltipOpen'
+  | 'onPopupOpen'
+  | 'onPopupClose'
+>;
+type Factory = Omit<TooltipFactory, LayerMethods>;
 
-export type TooltipRef = TooltipFactory;
+export type TooltipProps = Options & Events & CustomTooltipProps;
+export type TooltipRef = Factory;
 
-const Tooltip = memo(
-  forwardRef<TooltipRef, TooltipProps>(
-    ({ children, isOpen = false, ...rest }, ref) => {
-      const elementPortalRef = useRef<ElementPortalRef>(null);
+const Tooltip = forwardRef<TooltipRef, TooltipProps>(
+  ({ children, isOpen = false, ...rest }, ref) => {
+    const elementPortalRef = useRef<ElementPortalRef>(null);
 
-      const { container } = useElementParent();
-      const { element } = useElementFactory<
-        TooltipFactory,
-        [TooltipOptions, Layer]
-      >({
-        Factory: TooltipFactory,
-        options: [rest, container],
-      });
-      useElementLifeCycle<Marker, TooltipFactory>({ element });
-      useElementEvents({ element, props: rest });
-      useElementUpdate<
-        TooltipFactory,
-        Omit<TooltipDefaultProps, 'children'> & Omit<TooltipOptions, 'content'>
-      >({
-        element: element,
-        props: { ...rest, isOpen },
-        handlers: {
-          offset(prevValue, nextValue, element) {
-            if (!Array.isArray(nextValue)) return;
+    const validateDirection = (node: HTMLElement, direction: string) => {
+      const preset = 'leaflet-tooltip-';
 
-            const [x, y] = (prevValue as any) || [];
+      if (!node || node.classList.contains(`${preset}${direction}`)) return;
 
-            if (x !== nextValue[0] || y !== nextValue[1]) {
-              element?.setOptions({
-                offset: nextValue,
-              });
-            }
-          },
-          isOpen(prevValue, nextValue, instance) {
-            const alreadyOpen = instance?.isOpen();
-
-            if (nextValue && !alreadyOpen) {
-              container?.openTooltip();
-            } else if (!nextValue && alreadyOpen) {
-              container?.closeTooltip();
-            }
-          },
-          opacity(prevValue, nextValue, instance) {
-            if (typeof nextValue !== 'number') return;
-
-            instance?.setOpacity(nextValue);
-          },
-          allProps(prevValues, nextValues, instance) {
-            let prevProps = excludeProperties<TooltipProps>(prevValues, [
-              'children',
-              'isOpen',
-              'opacity',
-              'offset',
-            ]);
-
-            let nextProps = excludeProperties<TooltipProps>(nextValues, [
-              'children',
-              'isOpen',
-              'opacity',
-              'offset',
-            ]);
-
-            prevProps = excludeEvents<TooltipProps>(prevProps as any);
-            nextProps = excludeEvents<TooltipProps>(nextProps as any);
-
-            const changes = compareObjects(prevProps, nextProps);
-
-            if (Object.keys(changes)?.length > 0) {
-              instance?.setOptions(changes);
-            }
-          },
-        },
-        afterUpdateProps(element) {
-          if (!element) return;
-
-          element?.update();
-        },
-      });
-      useImperativeHandle(ref, () => element!, [element]);
-
-      const onTooltipOpen = () => {
-        setTimeout(() => {
-          element?.update();
-          elementPortalRef.current?.update();
-        }, 0);
-      };
-
-      const onTooltipClose = () => {
-        elementPortalRef.current?.update();
-      };
-
-      useEffect(() => {
-        if (!element || !container) return;
-
-        container.on({
-          tooltipclose: onTooltipClose,
-          tooltipopen: onTooltipOpen,
-        });
-
-        if (isOpen) container?.openTooltip();
-
-        return () => {
-          if (container) {
-            container.off({
-              tooltipclose: onTooltipClose,
-              tooltipopen: onTooltipOpen,
-            });
-
-            container.unbindTooltip();
-          }
-        };
-      }, [element, container]);
-
-      useEffect(() => {
-        if (!element || !container) return;
-
-        const alreadyOpen = element.isOpen();
-
-        if (isOpen && !alreadyOpen) {
-          container?.openTooltip();
-        } else if (!isOpen && alreadyOpen) {
-          container?.closeTooltip();
-        }
-      }, [element, container, isOpen]);
-
-      return (
-        <ElementPortal ref={elementPortalRef} element={element}>
-          {children}
-        </ElementPortal>
+      node.classList.remove(
+        `${preset}right`,
+        `${preset}left`,
+        `${preset}top`,
+        `${preset}bottom`,
       );
-    },
-  ),
+
+      node.classList.add(`${preset}${direction}`);
+    };
+
+    const { container } = useElementParent();
+    const { element } = useElementFactory<
+      TooltipFactory,
+      [TooltipOptions, Layer]
+    >({
+      Factory: TooltipFactory,
+      options: [rest, container],
+      validation: {
+        containerIsRequired: true,
+      },
+    });
+    useElementLifeCycle<Marker, TooltipFactory>({ element });
+    useElementEvents({ element, props: rest });
+    useElementUpdate<
+      TooltipFactory,
+      Omit<CustomTooltipProps, 'children'> & Omit<TooltipOptions, 'content'>
+    >({
+      element: element,
+      props: { ...rest, isOpen },
+      handlers: {
+        isOpen(prevValue, nextValue, instance) {
+          const alreadyOpen = instance?.isOpen();
+
+          if (nextValue && !alreadyOpen) {
+            container?.openTooltip();
+          } else if (!nextValue && alreadyOpen) {
+            container?.closeTooltip();
+          }
+        },
+        opacity(prevValue, nextValue, instance) {
+          if (typeof nextValue !== 'number') return;
+
+          instance?.setOpacity(nextValue);
+        },
+        className(prevValue, nextValue, instance) {
+          const node = instance?.getNode();
+
+          if (!node) return;
+
+          validateNodeClasses(prevValue!, nextValue!, node);
+        },
+        direction(prevValue, nextValue, instance) {
+          instance.options.direction = nextValue;
+        },
+        allProps(prevValues, nextValues, instance) {
+          const changes = compareObjects(prevValues, nextValues);
+
+          if (Object.keys(changes)?.length > 0) {
+            instance?.setOptions(changes);
+          }
+        },
+      },
+      afterUpdateProps(element) {
+        if (!element) return;
+
+        element?.update();
+      },
+    });
+    useImperativeHandle(ref, () => element!, [element]);
+
+    const onTooltipOpen = (event: TooltipEvent) => {
+      elementPortalRef.current?.update();
+
+      const tltp = event.tooltip as TooltipFactory;
+      const direction = tltp.options.direction;
+      const node = tltp?.getNode();
+
+      if (node) validateDirection(node, direction!);
+
+      setTimeout(() => {
+        element?.update();
+      }, 0);
+    };
+
+    const onTooltipClose = () => {
+      elementPortalRef.current?.update();
+    };
+
+    useEffect(() => {
+      if (!element || !container) return;
+
+      container.on({
+        tooltipclose: onTooltipClose,
+        tooltipopen: onTooltipOpen,
+      });
+
+      if (isOpen) container?.openTooltip();
+
+      return () => {
+        if (container) {
+          container.off({
+            tooltipclose: onTooltipClose,
+            tooltipopen: onTooltipOpen,
+          });
+
+          container.unbindTooltip();
+        }
+      };
+    }, [element, container]);
+
+    useEffect(() => {
+      if (!element || !container) return;
+
+      const alreadyOpen = element.isOpen();
+
+      if (isOpen && !alreadyOpen) {
+        container?.openTooltip();
+      } else if (!isOpen && alreadyOpen) {
+        container?.closeTooltip();
+      }
+    }, [element, container, isOpen]);
+
+    return (
+      <ElementPortal ref={elementPortalRef} element={element}>
+        {children}
+      </ElementPortal>
+    );
+  },
 );
 
-export default Tooltip;
+export default memo(Tooltip);

@@ -1,7 +1,8 @@
 import {
   point,
-  DivIcon as DivIconFactory,
+  DivIcon,
   DivIconOptions as DivIconFactoryOptions,
+  Util,
 } from 'leaflet';
 
 import { filterProperties } from '@utils/functions';
@@ -9,37 +10,38 @@ import { BaseFactoryMethods } from '@utils/interfaces';
 
 export interface DivIconOptions extends DivIconFactoryOptions {}
 
-interface AdditionalMethods extends BaseFactoryMethods<DivIconOptions> {
+interface AdditionalMethods
+  extends Omit<BaseFactoryMethods<DivIconOptions>, 'setInteractive'> {
   createIcon: (oldIcon?: HTMLElement) => HTMLElement | undefined;
 }
 
-const validateOptions = (options: any): DivIconOptions => {
-  const keys: (keyof DivIconOptions)[] = [
-    'attribution',
-    'bgPos',
-    'className',
-    'iconAnchor',
-    'iconRetinaUrl',
-    'iconSize',
-    'iconUrl',
-    'pane',
-    'popupAnchor',
-    'shadowAnchor',
-    'shadowRetinaUrl',
-    'shadowUrl',
-    'tooltipAnchor',
-  ];
+export const divIconKeys: (keyof DivIconOptions)[] = [
+  'attribution',
+  'bgPos',
+  'className',
+  'iconAnchor',
+  'iconRetinaUrl',
+  'iconSize',
+  'iconUrl',
+  'pane',
+  'popupAnchor',
+  'shadowAnchor',
+  'shadowRetinaUrl',
+  'shadowUrl',
+  'tooltipAnchor',
+];
 
+const validateOptions = (options: any): DivIconOptions => {
   const validOptions = filterProperties<DivIconOptions>({
     object: options,
-    map: keys,
+    map: divIconKeys,
   });
 
   return validOptions as DivIconOptions;
 };
 
-export default class DivIcon
-  extends DivIconFactory
+export default class DivIconFactory
+  extends DivIcon
   implements AdditionalMethods
 {
   private _element?: HTMLElement;
@@ -74,10 +76,6 @@ export default class DivIcon
     return div;
   }
 
-  getNode(): HTMLElement {
-    return this._element!;
-  }
-
   createIcon(oldIcon?: HTMLElement): HTMLElement {
     if (oldIcon) return this.buildIcon(oldIcon);
 
@@ -85,16 +83,20 @@ export default class DivIcon
   }
 
   getLeafletId() {
-    return (this as any)._leaflet_id;
+    return Util.stamp(this);
+  }
+
+  getNode(): HTMLElement {
+    return this._element!;
+  }
+
+  getOptions(): DivIconOptions {
+    return this.options;
   }
 
   setOptions(newOptions: any) {
     const validOptions = validateOptions(newOptions);
 
-    Object.assign(this.options, validOptions);
-  }
-
-  getOptions(): DivIconOptions {
-    return this.options;
+    Util.setOptions(this.options, validOptions);
   }
 }

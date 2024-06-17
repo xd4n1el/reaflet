@@ -5,14 +5,19 @@ import { useElementUpdate } from '@hooks/useElementUpdate';
 
 import TileLayerFactory, { TileLayerOptions } from './Factory';
 
+import { LayerMethods } from '@utils/types';
+import { validateNodeClasses } from '@utils/functions';
+
+type Factory = Omit<TileLayerFactory, LayerMethods>;
+
 export interface TileLayerProps extends TileLayerOptions {
   url: string;
 }
 
-export type TileLayerRef = TileLayerFactory;
+export type TileLayerRef = Factory;
 
-const TileLayer = memo(
-  forwardRef<TileLayerRef, TileLayerProps>(({ url, ...rest }, ref) => {
+const TileLayer = forwardRef<TileLayerRef, TileLayerProps>(
+  ({ url, ...rest }, ref) => {
     const { element } = useElementFactory<
       TileLayerFactory,
       [string, TileLayerOptions]
@@ -35,6 +40,13 @@ const TileLayer = memo(
             instance.setUrl(nextValue);
           }
         },
+        className(prevValue, nextValue, instance) {
+          const node = instance?.getNode();
+
+          if (!node) return;
+
+          validateNodeClasses(prevValue!, nextValue!, node);
+        },
         allProps(prevValues, nextValues, instance) {
           instance.setOptions(nextValues);
         },
@@ -43,7 +55,7 @@ const TileLayer = memo(
     useImperativeHandle(ref, () => element!, [element]);
 
     return null;
-  }),
+  },
 );
 
-export default TileLayer;
+export default memo(TileLayer);

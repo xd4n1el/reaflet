@@ -15,18 +15,21 @@ export interface VirtualizationOptions {
   chunkInterval?: number;
 }
 
-const validateOptions = (options: any): VirtualizationOptions => {
-  const keys: (keyof VirtualizationOptions)[] = ['chunkInterval', 'chunkSize'];
+const virtualizationKeys: (keyof VirtualizationOptions)[] = [
+  'chunkInterval',
+  'chunkSize',
+];
 
+const validateOptions = (options: any): VirtualizationOptions => {
   const validOptions = filterProperties<VirtualizationOptions>({
     object: options,
-    map: keys,
+    map: virtualizationKeys,
   });
 
   return validOptions as VirtualizationOptions;
 };
 
-export default class Virtualization<C = any> extends Evented {
+export default class VirtualizationFactory<C = any> extends Evented {
   private _layers: Layer[] = [];
   private _hidden_layers: Layer[] = [];
   private _map?: Map;

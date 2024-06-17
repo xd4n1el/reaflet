@@ -1,4 +1,4 @@
-import { MarkerClusterGroup, MarkerClusterGroupOptions } from 'leaflet';
+import { MarkerClusterGroup, MarkerClusterGroupOptions, Util } from 'leaflet';
 
 import { filterProperties } from '@utils/functions';
 import { BaseFactoryMethods } from '@utils/interfaces';
@@ -9,39 +9,40 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 export interface ClusterGroupOptions extends MarkerClusterGroupOptions {}
 
-interface AdditionalMethods extends BaseFactoryMethods<ClusterGroupOptions> {}
+interface AdditionalMethods
+  extends Omit<BaseFactoryMethods<ClusterGroupOptions>, 'setInteractive'> {}
+
+export const clusterGroupKeys: (keyof ClusterGroupOptions)[] = [
+  'animate',
+  'animateAddingMarkers',
+  'attribution',
+  'clusterPane',
+  'disableClusteringAtZoom',
+  'iconCreateFunction',
+  'maxClusterRadius',
+  'pane',
+  'polygonOptions',
+  'removeOutsideVisibleBounds',
+  'showCoverageOnHover',
+  'singleMarkerMode',
+  'spiderLegPolylineOptions',
+  'spiderfyDistanceMultiplier',
+  'spiderfyOnEveryZoom',
+  'spiderfyOnMaxZoom',
+  'spiderfyShapePositions',
+  'zoomToBoundsOnClick',
+];
 
 const validateOptions = (options: any): ClusterGroupOptions => {
-  const keys: (keyof ClusterGroupOptions)[] = [
-    'animate',
-    'animateAddingMarkers',
-    'attribution',
-    'clusterPane',
-    'disableClusteringAtZoom',
-    'iconCreateFunction',
-    'maxClusterRadius',
-    'pane',
-    'polygonOptions',
-    'removeOutsideVisibleBounds',
-    'showCoverageOnHover',
-    'singleMarkerMode',
-    'spiderLegPolylineOptions',
-    'spiderfyDistanceMultiplier',
-    'spiderfyOnEveryZoom',
-    'spiderfyOnMaxZoom',
-    'spiderfyShapePositions',
-    'zoomToBoundsOnClick',
-  ];
-
   const validOptions = filterProperties<ClusterGroupOptions>({
     object: options,
-    map: keys,
+    map: clusterGroupKeys,
   });
 
   return validOptions as ClusterGroupOptions;
 };
 
-export default class ClusterGroup
+export default class ClusterGroupFactory
   extends MarkerClusterGroup
   implements AdditionalMethods
 {
@@ -49,8 +50,6 @@ export default class ClusterGroup
     const validOptions = validateOptions(options);
 
     super(validOptions);
-
-    this.setOptions(options);
   }
 
   getNode() {
@@ -58,16 +57,16 @@ export default class ClusterGroup
   }
 
   getLeafletId() {
-    return (this as any)?._leaflet_id;
+    return Util.stamp(this);
+  }
+
+  getOptions() {
+    return this.options;
   }
 
   setOptions(newOptions: MarkerClusterGroupOptions) {
     const validOptions = validateOptions(newOptions);
 
-    Object.assign(this.options, validOptions);
-  }
-
-  getOptions() {
-    return this.options;
+    Util.setOptions(this.options, validOptions);
   }
 }

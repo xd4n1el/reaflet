@@ -17,6 +17,7 @@ import ElementPortal, {
   ElementPortalRef,
 } from '@components/Factory/ElementPortal';
 
+import { LayerMethods } from '@utils/types';
 import { renameProperties } from '@utils/functions';
 
 interface CustomDivIconProps {
@@ -32,71 +33,70 @@ type ValidDivIconOptions = Omit<
   DivIconOptions,
   'html' | 'iconUrl' | 'iconAnchor' | 'iconSize' | 'iconRetinaUrl' | 'shadowUrl'
 >;
+type Factory = Omit<DivIconFactory, LayerMethods>;
 
 export type DivIconProps = CustomDivIconProps & ValidDivIconOptions;
-export type DivIconRef = DivIconFactory;
+export type DivIconRef = Factory;
 
-const DivIcon = memo(
-  forwardRef<DivIconRef, DivIconProps>(
-    ({ children, ...rest }, ref): ReactElement => {
-      const elementPortalRef = useRef<ElementPortalRef>(null);
+const DivIcon = forwardRef<DivIconRef, DivIconProps>(
+  ({ children, ...rest }, ref): ReactElement => {
+    const elementPortalRef = useRef<ElementPortalRef>(null);
 
-      const renamedProps = useMemo(() => {
-        const map: Partial<Record<keyof DivIconProps, keyof DivIconOptions>> = {
-          src: 'iconUrl',
-          size: 'iconSize',
-          anchor: 'iconAnchor',
-          shadowURL: 'shadowUrl',
-          retinaURL: 'iconRetinaUrl',
-        };
+    const renamedProps = useMemo(() => {
+      const map: Partial<Record<keyof DivIconProps, keyof DivIconOptions>> = {
+        src: 'iconUrl',
+        size: 'iconSize',
+        anchor: 'iconAnchor',
+        shadowURL: 'shadowUrl',
+        retinaURL: 'iconRetinaUrl',
+      };
 
-        return renameProperties<DivIconProps, DivIconOptions>(rest, map);
-      }, [rest]);
+      return renameProperties<DivIconProps, DivIconOptions>(rest, map);
+    }, [rest]);
 
-      const { element } = useElementFactory<DivIconFactory, [DivIconOptions]>({
-        Factory: DivIconFactory,
-        options: [renamedProps],
-      });
-      useElementLifeCycle<any, DivIconFactory>({
-        element,
-        beforeAdd({ container }) {
-          if (!container) return;
+    const { element } = useElementFactory<DivIconFactory, [DivIconOptions]>({
+      Factory: DivIconFactory,
+      options: [renamedProps],
+    });
+    useElementLifeCycle<any, DivIconFactory>({
+      element,
+      beforeAdd({ container }) {
+        if (!container) return;
 
-          const node: any = container?.getElement();
-          const elementClassList = Array.from(node?.classList || {});
+        const node: any = container?.getElement();
+        const elementClassList = Array.from(node?.classList || {});
 
-          return elementClassList;
+        return elementClassList;
+      },
+      afterAdd({ container }, response) {
+        if (!container) return;
+
+        const node: any = container?.getElement();
+
+        node?.setAttribute('class', response?.join(' '));
+
+        setTimeout(() => {
+          elementPortalRef.current?.update();
+        }, 0);
+      },
+    });
+    useElementUpdate<DivIconFactory, DivIconProps>({
+      element,
+      props: renamedProps,
+      handlers: {
+        allProps(prevValues, nextValues, instance) {
+          instance.setOptions(nextValues);
         },
-        afterAdd({ container }, response) {
-          if (!container) return;
+      },
+    });
+    useImperativeHandle(ref, () => element!, [element]);
 
-          const node: any = container?.getElement();
-
-          node?.setAttribute('class', response?.join(' '));
-
-          setTimeout(() => {
-            elementPortalRef.current?.update();
-          }, 0);
-        },
-      });
-      useElementUpdate<DivIconFactory, DivIconProps>({
-        element,
-        props: renamedProps,
-        handlers: {
-          allProps(prevValues, nextValues, instance) {
-            instance.setOptions(nextValues);
-          },
-        },
-      });
-      useImperativeHandle(ref, () => element!, [element]);
-
-      return (
-        <ElementPortal ref={elementPortalRef} element={element}>
-          {children}
-        </ElementPortal>
-      );
-    },
-  ),
+    return (
+      <ElementPortal ref={elementPortalRef} element={element}>
+        {children}
+      </ElementPortal>
+    );
+  },
 );
 
-export default DivIcon;
+export default memo(DivIcon);

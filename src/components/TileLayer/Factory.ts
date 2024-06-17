@@ -1,54 +1,57 @@
-import { filterProperties } from '@/utils/functions';
-import { BaseFactoryMethods } from '@/utils/interfaces';
 import {
-  TileLayer as TileLayerFactory,
-  TileLayerOptions as TileLayerFactoryOptions,
+  TileLayer,
+  TileLayerOptions as LeafletTileLayerOptions,
+  Util,
 } from 'leaflet';
 
-export interface TileLayerOptions extends TileLayerFactoryOptions {}
+import { filterProperties } from '@utils/functions';
+import { BaseFactoryMethods } from '@utils/interfaces';
 
-interface AdditionalMethods extends BaseFactoryMethods {}
+export interface TileLayerOptions
+  extends Omit<LeafletTileLayerOptions, 'attribution'> {}
+
+interface AdditionalMethods
+  extends Omit<BaseFactoryMethods<TileLayerOptions>, 'setInteractive'> {}
+
+export const tileLayerKeys: (keyof TileLayerOptions)[] = [
+  'accessToken',
+  'bounds',
+  'className',
+  'crossOrigin',
+  'detectRetina',
+  'errorTileUrl',
+  'id',
+  'keepBuffer',
+  'maxNativeZoom',
+  'maxZoom',
+  'minNativeZoom',
+  'minZoom',
+  'noWrap',
+  'opacity',
+  'pane',
+  'referrerPolicy',
+  'subdomains',
+  'tileSize',
+  'tms',
+  'updateInterval',
+  'updateWhenIdle',
+  'updateWhenZooming',
+  'zIndex',
+  'zoomOffset',
+  'zoomReverse',
+];
 
 const validateOptions = (options: any): TileLayerOptions => {
-  const keys: (keyof TileLayerOptions)[] = [
-    'accessToken',
-    'attribution',
-    'bounds',
-    'className',
-    'crossOrigin',
-    'detectRetina',
-    'errorTileUrl',
-    'id',
-    'keepBuffer',
-    'maxNativeZoom',
-    'maxZoom',
-    'minNativeZoom',
-    'minZoom',
-    'noWrap',
-    'opacity',
-    'pane',
-    'referrerPolicy',
-    'subdomains',
-    'tileSize',
-    'tms',
-    'updateInterval',
-    'updateWhenIdle',
-    'updateWhenZooming',
-    'zIndex',
-    'zoomOffset',
-    'zoomReverse',
-  ];
-
   const validOptions = filterProperties<TileLayerOptions>({
     object: options,
-    map: keys,
+    map: tileLayerKeys,
   });
 
   return validOptions as TileLayerOptions;
 };
 
-export default class TileLayer
-  extends TileLayerFactory
+export default class TileLayerFactory
+  extends TileLayer
   implements AdditionalMethods
 {
   private URL: string | undefined;
@@ -65,20 +68,20 @@ export default class TileLayer
   }
 
   getLeafletId() {
-    return (this as any)?._leaflet_id;
+    return Util.stamp(this);
   }
 
   getNode() {
-    return this.getContainer() as HTMLElement;
+    return this?.getContainer() as HTMLElement;
   }
 
   getOptions() {
-    return this.options;
+    return this?.options;
   }
 
   setOptions(newOptions: TileLayerOptions) {
     const validOptions = validateOptions(newOptions);
 
-    Object.assign(this.options, validOptions);
+    Util.setOptions(this.options, validOptions);
   }
 }

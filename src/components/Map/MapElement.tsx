@@ -7,17 +7,16 @@ import { useMapFactory } from '@hooks/useMapFactory';
 
 import Element from '@components/Factory/Element';
 import MapFactory, { MapOptions } from './Factory';
-import { LatLngBounds, LatLngExpression } from 'leaflet';
+import { LatLng, LatLngBounds, LatLngExpression } from 'leaflet';
 
 interface CustomMapElementProps {
   children?: React.ReactNode;
 }
 
 type ValidMapOptions = Omit<MapOptions, 'zoomControl'>;
+type Events = Omit<EventHandlers, 'onSpiderfied' | 'onUnspiderfied'>;
 
-export type MapElementProps = ValidMapOptions &
-  CustomMapElementProps &
-  EventHandlers;
+export type MapElementProps = ValidMapOptions & CustomMapElementProps & Events;
 
 const MapElement = memo<MapElementProps>(({ children, ...rest }) => {
   const { createMap, destroyMap } = useMapFactory();
@@ -27,7 +26,7 @@ const MapElement = memo<MapElementProps>(({ children, ...rest }) => {
     [HTMLElement | null, MapOptions]
   >({
     Factory: MapFactory,
-    options: [container, rest],
+    options: [container, { ...rest }],
     afterCreation: createMap,
     validation: {
       containerIsRequired: true,
@@ -43,7 +42,11 @@ const MapElement = memo<MapElementProps>(({ children, ...rest }) => {
           .getCenter()
           .equals(nextValue as LatLngExpression);
 
-        if (isEqual) return;
+        const isPropEqual = (nextValue as LatLng).equals(
+          prevValue as LatLngExpression,
+        );
+
+        if (isEqual || isPropEqual) return;
 
         instance.setView(nextValue as LatLngExpression);
       },
@@ -125,6 +128,20 @@ const MapElement = memo<MapElementProps>(({ children, ...rest }) => {
           instance?.boxZoom?.disable();
         } else if (!isEnabled && nextValue) {
           instance?.boxZoom?.enable();
+        }
+      },
+      zoom(prevValue, nextValue, instance) {
+        if (prevValue === nextValue || typeof nextValue !== 'number') return;
+
+        instance.setZoom(nextValue as number);
+      },
+      attributionControl(prevValue, nextValue, instance) {
+        const isEnabled = instance.attributionControl.getContainer();
+
+        if (isEnabled && !nextValue) {
+          instance.attributionControl.remove();
+        } else if (!isEnabled && nextValue) {
+          instance.attributionControl.addTo(instance);
         }
       },
       allProps(prevValues, nextValues, instance) {

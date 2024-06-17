@@ -23,7 +23,7 @@ yarn add reaflet
 
 #### Main Components
 
-Map: The main component that creates the map container.
+Map: The main component that creates the map and the factory to other components.
 
 TileLayer: Adds tile layers to the map.
 

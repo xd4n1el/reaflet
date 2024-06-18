@@ -6,7 +6,6 @@
 .pnp.js
 
 #not-necessary or test samples
-/public
 yarn.lock
 /src/reportWebVitals.ts
 /src/setupTests.ts

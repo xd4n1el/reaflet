@@ -1,6 +1,6 @@
 # Reaflet
 
-![Reaflet Screenshot](public/screenshot.png)
+![Reaflet Screenshot](public/reaflet-logo.png)
 
 ### Overview
 Reaflet is a library that integrates React with Leaflet, making it easy to create interactive maps in your React applications. With Reaflet, you can create and customize maps effortlessly using React components that abstract the complexity of the Leaflet API.

@@ -1,8 +1,9 @@
 {
-  "name": "reaflet",
+  "name": "reafletjs",
   "description": "Leaflet wrapper for React, javaScript library for mobile-friendly interactive maps",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
+  "homepage": "https://reaflet.vercel.app",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.mjs",
   "types": "dist/index.d.ts",

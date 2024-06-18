@@ -16,7 +16,7 @@ Reaflet is a library that integrates React with Leaflet, making it easy to creat
 [Full Documentation](https://reaflet.vercel.app/home)
 
 ### Contributing
-Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue on our [GitHub Repository](https://github.com/username/reaflet).
+Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue on our [GitHub Repository](https://github.com/xd4n1el/reaflet).
 
 ### License
 This project is licensed under the MIT License.

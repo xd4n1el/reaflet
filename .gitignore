@@ -21,7 +21,6 @@ yarn.lock
 # production
 /build
 /dist
-/lib
 
 # misc
 .DS_Store

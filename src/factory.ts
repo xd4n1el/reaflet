@@ -30,6 +30,8 @@ import {
   UseElementUpdateHook,
   useElementUpdate,
 } from '@hooks/useElementUpdate';
+import { BaseFactoryMethods } from '@utils/interfaces';
+import Validator from '@helpers/validator';
 
 export {
   Element,
@@ -40,6 +42,7 @@ export {
   DomUtil,
   Browser,
   PolyUtil,
+  Validator,
   useElementEvents,
   useElementFactory,
   useElementLifeCycle,
@@ -62,4 +65,5 @@ export type {
   AddCallback,
   UseElementLifeCycleHook,
   UseElementUpdateHook,
+  BaseFactoryMethods,
 };

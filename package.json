@@ -1,14 +1,15 @@
 {
   "name": "reafletjs",
   "description": "Leaflet wrapper for React, javaScript library for mobile-friendly interactive maps",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "homepage": "https://reaflet.vercel.app",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/*"
+    "dist/*",
+    "dist/Reaflet.module.css"
   ],
   "license": "MIT",
   "author": "xd4n1el",
@@ -37,6 +38,10 @@
       "types": "./dist/cjs/performance.d.ts",
       "import": "./dist/esm/performance.mjs",
       "default": "./dist/cjs/performance.js"
+    },
+    "./reaflet.css": {
+      "import": "./dist/Reaflet.css",
+      "default": "./dist/Reaflet.css"
     }
   },
   "scripts": {
@@ -85,7 +90,6 @@
     "@types/rbush": "^3.0.3",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@types/rollup-plugin-peer-deps-external": "^2.2.5",
     "@typescript-eslint/parser": "^7.10.0",
     "css-loader": "^7.1.2",
     "esbuild-plugin-svgr": "^2.1.0",
@@ -97,11 +101,10 @@
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "globals": "^15.3.0",
-    "postcss": "^8.4.38",
-    "postcss-modules": "^6.0.0",
     "prettier": "^3.2.5",
     "prettier-eslint": "^16.3.0",
     "react-scripts": "^5.0.1",
+    "terser": "^5.31.1",
     "tsconfig-paths": "^4.2.0",
     "tsup": "^8.1.0",
     "typescript": "5.2.2",

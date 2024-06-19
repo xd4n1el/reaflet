@@ -13,7 +13,6 @@ function SVG(asName = 'ReactComponent') {
 
 const tsconfig = path.resolve(__dirname, './tsconfig.build.json');
 const name: string = 'reaflet';
-const publicDir = './src/styles';
 const plugins = [
   svgr({
     dimensions: false,
@@ -41,7 +40,7 @@ const createConfig = (
     name,
     tsconfig,
     platform: 'browser',
-    publicDir,
+    minify: 'terser',
     entry,
     format,
     outDir,

@@ -5,8 +5,6 @@ import {
   FullScreen as FullScreenContainer,
 } from 'react-full-screen';
 
-import '@styles/Fullscreen.css';
-
 export interface FullscreenProps {
   children?: ReactNode;
 }

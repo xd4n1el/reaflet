@@ -12,8 +12,6 @@ export interface CustomMapProps extends MapElementProps {
 export type MapProps = CustomMapProps & EventHandlers;
 export type MapRef = HTMLDivElement;
 
-import '@styles/Reaflet.css';
-
 const Map = forwardRef<MapRef, MapProps>(
   ({ children, containerAttributes = {}, ...rest }, ref) => {
     return (

@@ -22,9 +22,6 @@ import TileLayerWMS from './components/TileLayerWMS';
 import AttributionControl from './components/Control/Attribution';
 
 import 'leaflet/dist/leaflet.css';
-import './styles/Control.css';
-import './styles/Fullscreen.css';
-import './styles/Reaflet.css';
 
 export {
   DivIcon,

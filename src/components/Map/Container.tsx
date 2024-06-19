@@ -10,8 +10,6 @@ import {
 import FullScreen from './Fullscreen';
 import Element from '@components/Factory/Element';
 
-import '@styles/Reaflet.css';
-
 export interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
 }

@@ -42,8 +42,6 @@ export default class GeoJSONFactory
     const validOptions = validateOptions(options);
 
     super(geojson, validOptions);
-
-    console.log((this as any)?._element);
   }
 
   getLeafletId() {

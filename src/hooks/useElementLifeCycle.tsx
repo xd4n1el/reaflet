@@ -1,7 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { useElementParent } from '@hooks/useElementParent';
 
-import { DivIcon, Icon, Layer, Map, Marker, Popup, Tooltip } from 'leaflet';
+import {
+  DivIcon,
+  Icon,
+  Layer,
+  LayerGroup,
+  Map,
+  Marker,
+  Popup,
+  Tooltip,
+} from 'leaflet';
 
 import Validator, { ElementTypeName } from '@helpers/validator';
 
@@ -18,7 +27,7 @@ export interface UseElementLifeCycleHook<T = any, U = any> {
 
 interface checkType {
   types: ElementTypeName[];
-  action: (params: any) => any;
+  action: () => any;
 }
 
 /**
@@ -41,19 +50,35 @@ export const useElementLifeCycle = <T extends object = any, U = any>({
 
   const validator = new Validator();
 
-  const defaultContainer = (response: any) => {
-    (container as Map)?.addLayer(element as any);
-    afterAdd({ container, instance: element }, response);
+  const bindElementToContainer = () => {
+    if (validator.isPopup(element)) {
+      (element as Popup).openOn(container as Map);
 
-    return () => {
-      (container as Map)?.removeLayer(element as any);
-    };
+      return () => {
+        (container as Map)?.removeLayer(element as Popup);
+      };
+    } else if (
+      validator.isFeatureGroup(element) ||
+      validator.isLayerGroup(element) ||
+      validator.isControl(element)
+    ) {
+      (element as LayerGroup)?.addTo(container as Map);
+
+      return () => {
+        (element as LayerGroup)?.remove();
+      };
+    } else {
+      (container as Map)?.addLayer(element as any);
+
+      return () => {
+        (container as Map)?.removeLayer(element as any);
+      };
+    }
   };
 
-  const layerAsContainer = (response: any) => {
+  const bindElementToLayer = () => {
     if (validator?.isTooltip(element)) {
       (container as Layer)?.bindTooltip(element as Tooltip);
-      afterAdd({ container, instance: element }, response);
 
       return () => {
         (element as Tooltip)?.clearAllEventListeners();
@@ -61,7 +86,6 @@ export const useElementLifeCycle = <T extends object = any, U = any>({
       };
     } else if (validator?.isPopup(element)) {
       (container as Layer).bindPopup(element as Popup);
-      afterAdd({ container, instance: element }, response);
 
       return () => {
         (element as Popup)?.clearAllEventListeners();
@@ -69,10 +93,12 @@ export const useElementLifeCycle = <T extends object = any, U = any>({
       };
     } else if (validator?.isIcon(element) || validator?.isDivIcon(element)) {
       (container as Marker)?.setIcon(element as Icon | DivIcon);
-      afterAdd({ container, instance: element }, response);
     } else {
       (container as Map)?.addLayer(element as Marker);
-      afterAdd({ container, instance: element }, response);
+
+      return () => {
+        (container as Map)?.removeLayer(element as Marker);
+      };
     }
   };
 
@@ -89,7 +115,7 @@ export const useElementLifeCycle = <T extends object = any, U = any>({
     const elementValidation: checkType[] = [
       {
         types: ['layer'],
-        action: layerAsContainer,
+        action: bindElementToLayer,
       },
     ];
 
@@ -98,10 +124,12 @@ export const useElementLifeCycle = <T extends object = any, U = any>({
       {};
 
     if (action) {
-      cleanupFn = action(response);
+      cleanupFn = action();
     } else if (!disableUnmount) {
-      cleanupFn = defaultContainer(response);
+      cleanupFn = bindElementToContainer();
     }
+
+    afterAdd({ container, instance: element }, response);
 
     return () => {
       cleanupFn?.();

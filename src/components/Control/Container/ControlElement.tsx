@@ -2,14 +2,13 @@ import {
   ReactNode,
   forwardRef,
   memo,
-  useEffect,
   useImperativeHandle,
   useRef,
 } from 'react';
+import { useElementLifeCycle } from '@hooks/useElementLifeCycle';
 import { useElementFactory } from '@hooks/useElementFactory';
 import { useElementParent } from '@hooks/useElementParent';
 import { useElementUpdate } from '@hooks/useElementUpdate';
-import { useMap } from '@hooks/useMap';
 
 import { ControlProvider } from '@context/Control';
 import ControlFactory, { ControlOptions } from './Factory';
@@ -28,7 +27,6 @@ const ControlElement = forwardRef<ControlRef, ControlProps>(
   ({ children, position, ...rest }, ref) => {
     const elementPortalRef = useRef<ElementPortalRef>(null);
 
-    const map = useMap();
     const { container } = useElementParent();
     const { element } = useElementFactory<
       ControlFactory,
@@ -38,6 +36,12 @@ const ControlElement = forwardRef<ControlRef, ControlProps>(
       options: [container, { ...rest, position }],
       validation: {
         containerIsRequired: true,
+      },
+    });
+    useElementLifeCycle({
+      element,
+      afterAdd() {
+        elementPortalRef.current?.update();
       },
     });
     useElementUpdate<ControlFactory, ControlOptions>({
@@ -51,18 +55,6 @@ const ControlElement = forwardRef<ControlRef, ControlProps>(
         },
       },
     });
-
-    useEffect(() => {
-      if (!element || !map) return;
-
-      element.addTo(map);
-
-      elementPortalRef.current?.update();
-
-      return () => {
-        element?.remove();
-      };
-    }, [element, map]);
 
     useImperativeHandle(ref, () => element!, [element]);
 

@@ -7,8 +7,14 @@ export interface MapStore {
   destroyMap: () => void;
 }
 
-export const useMapStore = create<MapStore>(set => ({
+export const useMapStore = create<MapStore>((set, get) => ({
   map: undefined,
-  createMap: (map: Map) => set({ map }),
-  destroyMap: () => set({ map: undefined }),
+  createMap(map: Map) {
+    if (get().map) throw new Error('Map already initialized.');
+
+    set({ map });
+  },
+  destroyMap() {
+    set({ map: undefined });
+  },
 }));

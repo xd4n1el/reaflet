@@ -39,6 +39,7 @@ const createConfig = (
     skipNodeModulesBundle: true,
     name,
     tsconfig,
+
     platform: 'browser',
     minify: 'terser',
     entry,
@@ -64,10 +65,12 @@ const createConfig = (
 const config = defineConfig([
   createConfig(['./src/index.ts'], ['cjs'], 'dist/cjs'),
   createConfig(['./src/index.ts'], ['esm'], 'dist/esm'),
-  createConfig(['./src/performance.ts'], ['cjs'], 'dist/cjs'),
-  createConfig(['./src/performance.ts'], ['esm'], 'dist/esm'),
+  createConfig(['./src/helpers.ts'], ['esm'], 'dist/esm'),
+  createConfig(['./src/helpers.ts'], ['esm'], 'dist/esm'),
   createConfig(['./src/factory.ts'], ['cjs'], 'dist/cjs'),
   createConfig(['./src/factory.ts'], ['esm'], 'dist/esm'),
+  createConfig(['./src/performance.ts'], ['cjs'], 'dist/cjs'),
+  createConfig(['./src/performance.ts'], ['esm'], 'dist/esm'),
 ]);
 
 export default config;

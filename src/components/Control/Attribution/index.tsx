@@ -2,13 +2,12 @@ import {
   ReactNode,
   forwardRef,
   memo,
-  useEffect,
   useImperativeHandle,
   useRef,
 } from 'react';
+import { useElementLifeCycle } from '@hooks/useElementLifeCycle';
 import { useElementFactory } from '@hooks/useElementFactory';
 import { useElementUpdate } from '@hooks/useElementUpdate';
-import { useMap } from '@hooks/useMap';
 
 import AttributionControlFactory, {
   AttributionControlOptions,
@@ -30,13 +29,18 @@ const AttributionControl = forwardRef<
 >(({ children, ...rest }, ref) => {
   const elementPortalRef = useRef<ElementPortalRef>(null);
 
-  const map = useMap();
   const { element } = useElementFactory<
     AttributionControlFactory,
     [AttributionControlOptions]
   >({
     Factory: AttributionControlFactory,
     options: [rest],
+  });
+  useElementLifeCycle({
+    element,
+    afterAdd() {
+      elementPortalRef?.current?.update();
+    },
   });
   useElementUpdate<AttributionControlFactory, AttributionControlProps>({
     element,
@@ -50,18 +54,6 @@ const AttributionControl = forwardRef<
       },
     },
   });
-
-  useEffect(() => {
-    if (!map || !element) return;
-
-    element?.addTo(map);
-
-    elementPortalRef.current?.update();
-
-    return () => {
-      element?.remove();
-    };
-  }, [map, element]);
 
   useImperativeHandle(ref, () => element!, [element]);
 

@@ -47,12 +47,9 @@ const Popup = forwardRef<PopupRef, PopupProps>(
     const elementPortalRef = useRef<ElementPortalRef>(null);
 
     const { container } = useElementParent();
-    const { element } = useElementFactory<
-      PopupFactory,
-      [LatLngExpression, PopupOptions]
-    >({
+    const { element } = useElementFactory<PopupFactory, [PopupOptions, any]>({
       Factory: PopupFactory,
-      options: [position!, rest],
+      options: [rest, container],
     });
     useElementLifeCycle({ element });
     useElementEvents({ element, props: rest });

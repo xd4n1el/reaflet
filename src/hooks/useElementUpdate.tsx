@@ -23,17 +23,20 @@ export interface UseElementUpdateHook<T = any, K = any, C = any> {
   afterUpdateProps?: (instance: T) => void;
 }
 
-const shallowEqual = (obj1: any, obj2: any) => {
-  if (obj1 === obj2) return true;
-  if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
+const shallowEqual = (prev: any, next: any) => {
+  if (prev === next) return true;
 
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
+  if (typeof prev !== 'object' || typeof next !== 'object' || prev !== next) {
+    return false;
+  }
 
-  if (keys1.length !== keys2.length) return false;
+  const prevKeys = Object.keys(prev);
+  const nextKeys = Object.keys(next);
 
-  for (const key of keys1) {
-    if (obj1[key] !== obj2[key]) return false;
+  if (prevKeys.length !== nextKeys.length) return false;
+
+  for (const key of prevKeys) {
+    if (prev[key] !== next[key]) return false;
   }
 
   return true;

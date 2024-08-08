@@ -1,15 +1,14 @@
 {
   "name": "reafletjs",
   "description": "Leaflet wrapper for React, javaScript library for mobile-friendly interactive maps",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": false,
   "homepage": "https://reaflet.vercel.app",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/*",
-    "dist/Reaflet.module.css"
+    "dist/*"
   ],
   "license": "MIT",
   "author": "xd4n1el",
@@ -27,20 +26,30 @@
     ".": {
       "types": "./dist/cjs/index.d.ts",
       "import": "./dist/esm/index.mjs",
+      "require": "./dist/cjs/index.js",
       "default": "./dist/cjs/index.js"
     },
     "./factory": {
       "types": "./dist/cjs/factory.d.ts",
       "import": "./dist/esm/factory.mjs",
+      "require": "./dist/cjs/factory.js",
       "default": "./dist/cjs/factory.js"
     },
     "./performance": {
       "types": "./dist/cjs/performance.d.ts",
       "import": "./dist/esm/performance.mjs",
+      "require": "./dist/cjs/performance.js",
       "default": "./dist/cjs/performance.js"
+    },
+    "./helpers": {
+      "types": "./dist/cjs/helpers.d.ts",
+      "import": "./dist/esm/helpers.mjs",
+      "require": "./dist/cjs/helpers.js",
+      "default": "./dist/cjs/helpers.js"
     },
     "./reaflet.css": {
       "import": "./dist/Reaflet.css",
+      "require": "./dist/Reaflet.css",
       "default": "./dist/Reaflet.css"
     }
   },
@@ -57,6 +66,8 @@
     "@types/leaflet.heat": "^0.2.4",
     "@types/leaflet.markercluster": "^1.5.4",
     "leaflet": "^1.9.4",
+    "leaflet-geosearch": "^4.0.0",
+    "leaflet-routing-machine": "^3.2.12",
     "leaflet.heat": "^0.2.0",
     "leaflet.markercluster": "^1.5.3",
     "rbush": "^3.0.1",
@@ -67,9 +78,11 @@
   },
   "peerDependencies": {
     "@types/leaflet": "^1.9.12",
+    "@types/leaflet-routing-machine": "^3.2.8",
     "@types/leaflet.heat": "^0.2.4",
     "@types/leaflet.markercluster": "^1.5.4",
     "leaflet": "^1.9.4",
+    "leaflet-routing-machine": "^3.2.12",
     "leaflet.heat": "^0.2.0",
     "leaflet.markercluster": "^1.5.3",
     "rbush": "^3.0.1",
@@ -84,6 +97,7 @@
     "@svgr/plugin-jsx": "^8.1.0",
     "@swc/core": "^1.5.29-nightly-20240612.3",
     "@types/leaflet": "^1.9.12",
+    "@types/leaflet-routing-machine": "^3.2.8",
     "@types/leaflet.heat": "^0.2.4",
     "@types/leaflet.markercluster": "^1.5.4",
     "@types/node": "^20.14.1",

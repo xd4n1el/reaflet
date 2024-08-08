@@ -1,9 +1,9 @@
 import {
-  LatLngExpression,
   Popup,
   PopupOptions as LeafletPopupOptions,
   Util,
   DomUtil,
+  Layer,
 } from 'leaflet';
 
 import { filterProperties } from '@utils/functions';
@@ -41,10 +41,10 @@ const validateOptions = (options: any): PopupOptions => {
 };
 
 export default class PopupFactory extends Popup implements AdditionalMethods {
-  constructor(position: LatLngExpression, options: PopupOptions) {
+  constructor(options: PopupOptions, source?: Layer) {
     const validOptions = validateOptions(options);
 
-    super(position, validOptions);
+    super(validOptions, source);
   }
 
   getLeafletId() {

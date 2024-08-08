@@ -1,4 +1,5 @@
 import {
+  Control,
   DivIcon,
   FeatureGroup,
   Icon,
@@ -100,6 +101,10 @@ export default class Validator {
 
   isPopup(element: any): element is Popup {
     return element instanceof Popup;
+  }
+
+  isControl(element: any): element is Control {
+    return element instanceof Control;
   }
 
   isLayer(element: any): element is Layer {

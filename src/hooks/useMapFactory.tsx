@@ -12,8 +12,5 @@ import 'leaflet/dist/leaflet.css';
 export const useMapFactory = () => {
   const { createMap, destroyMap } = useMapStore(state => state);
 
-  return {
-    createMap,
-    destroyMap,
-  };
+  return { createMap, destroyMap };
 };

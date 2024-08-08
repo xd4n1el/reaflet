@@ -90,7 +90,7 @@ const Marker = forwardRef<MarkerRef, MarkerProps>(
         rotationAngle(prevValue, nextValue, instance) {
           const animate = typeof smoothDuration === 'number';
 
-          instance.setRotationAngle(nextValue as number, { animate });
+          instance?.setRotationAngle(nextValue || 0, { animate });
         },
         interactive(prevValue, nextValue, instance) {
           instance.setInteractive(nextValue as boolean);

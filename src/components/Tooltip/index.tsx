@@ -70,6 +70,11 @@ const Tooltip = forwardRef<TooltipRef, TooltipProps>(
       validation: {
         containerIsRequired: true,
       },
+      afterCreation() {
+        if (elementPortalRef?.current) {
+          elementPortalRef?.current?.update();
+        }
+      },
     });
     useElementLifeCycle<Marker, TooltipFactory>({ element });
     useElementEvents({ element, props: rest });
@@ -121,8 +126,6 @@ const Tooltip = forwardRef<TooltipRef, TooltipProps>(
     useImperativeHandle(ref, () => element!, [element]);
 
     const onTooltipOpen = (event: TooltipEvent) => {
-      elementPortalRef.current?.update();
-
       const tltp = event.tooltip as TooltipFactory;
       const direction = tltp.options.direction;
       const node = tltp?.getNode();
@@ -130,6 +133,7 @@ const Tooltip = forwardRef<TooltipRef, TooltipProps>(
       if (node) validateDirection(node, direction!);
 
       setTimeout(() => {
+        elementPortalRef.current?.update();
         element?.update();
       }, 0);
     };
@@ -163,7 +167,7 @@ const Tooltip = forwardRef<TooltipRef, TooltipProps>(
     useEffect(() => {
       if (!element || !container) return;
 
-      const alreadyOpen = element.isOpen();
+      const alreadyOpen = element?.isOpen();
 
       if (isOpen && !alreadyOpen) {
         container?.openTooltip();

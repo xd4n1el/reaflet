@@ -1,10 +1,18 @@
+[1.0.4] - 
+
+### Added Leaflet Geosearch Hook
+### Only Small Improvements
+
+[1.0.3] - 
+
+### Add the reaflet.css import
+
 [1.0.2] - 
 
 ### Fixed Popup error: "cannot read properties of undefined: reading _source"
 ### Improvements to Factory
 ### fixed useElementUpdate to update props state even when the next value is nullish
 ### Added Leaflet Routing Machine Hook
-### Added Leaflet Geosearch Hook
 ### Added /helpers path
 ### Small general improvements
 

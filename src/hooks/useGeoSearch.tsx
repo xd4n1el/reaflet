@@ -70,7 +70,7 @@ export const createProvider = <T extends NameMap>(
   }
 };
 
-const useGeoSearch = (
+export const useGeoSearch = (
   { provider, ...rest }: SearchOptions = {} as any,
 ): SearchController => {
   const [searchControl, setSearchControl] = useState<SearchController>();
@@ -102,5 +102,3 @@ const useGeoSearch = (
 
   return searchControl as any;
 };
-
-export default useGeoSearch;

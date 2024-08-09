@@ -50,6 +50,14 @@ const Popup = forwardRef<PopupRef, PopupProps>(
     const { element } = useElementFactory<PopupFactory, [PopupOptions, any]>({
       Factory: PopupFactory,
       options: [rest, container],
+      validation: {
+        containerIsRequired: true,
+      },
+      afterCreation() {
+        if (elementPortalRef?.current) {
+          elementPortalRef?.current?.update();
+        }
+      },
     });
     useElementLifeCycle({ element });
     useElementEvents({ element, props: rest });
@@ -87,10 +95,9 @@ const Popup = forwardRef<PopupRef, PopupProps>(
     useImperativeHandle(ref, () => element!, [element]);
 
     const popupopen = () => {
-      elementPortalRef.current?.update();
-
       setTimeout(() => {
         element?.update();
+        elementPortalRef.current?.update();
       }, 0);
     };
 
@@ -121,7 +128,7 @@ const Popup = forwardRef<PopupRef, PopupProps>(
       const alreadyOpen = element.isOpen();
 
       if (isOpen && !alreadyOpen) {
-        container?.openTooltip();
+        container?.openPopup();
       } else if (!isOpen && alreadyOpen) {
         container?.closePopup();
       }
